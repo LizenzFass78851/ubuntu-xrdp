@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 as builder
+FROM ubuntu:22.04 as builder
 MAINTAINER Daniel Guerra
 
 # Install packages
@@ -36,7 +36,7 @@ RUN make
 RUN mkdir -p /tmp/so
 RUN cp src/.libs/*.so /tmp/so
 
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 ARG ADDITIONAL_PACKAGES=""
 ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
 ENV DEBIAN_FRONTEND noninteractive
