@@ -1,4 +1,4 @@
-## Ubuntu from 16.04 to 22.04 (only LTS Versions)  Multi User Remote Desktop Server
+## Ubuntu from 18.04 to 22.04 (only LTS Versions)  Multi User Remote Desktop Server
 
 Fully implemented Multi User xrdp
 with xorgxrdp and pulseaudio
