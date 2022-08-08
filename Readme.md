@@ -1,8 +1,8 @@
-## Ubuntu 20.04/18.04/16.04  Multi User Remote Desktop Server
+## Ubuntu from 16.04 to 22.04 (only LTS Versions)  Multi User Remote Desktop Server
 
 Fully implemented Multi User xrdp
 with xorgxrdp and pulseaudio
-on Ubuntu 20.04/18.04
+on Ubuntu from 16.04 to 22.04
 Copy/Paste and sound is working.
 Users can re-login in the same session.
 Xfce4, Firefox are pre installed.
@@ -18,7 +18,7 @@ Start the rdp server
 (WARNING: use the --shm-size 1g or firefox/chrome will crash)
 
 ```bash
-docker run -d --name uxrdp --hostname terminalserver --shm-size 1g -p 3389:3389 -p 2222:22 danielguerra/ubuntu-xrdp:20.04
+docker run -d --name uxrdp --hostname terminalserver --shm-size 1g -p 3389:3389 -p 2222:22 danielguerra/ubuntu-xrdp:latest
 ```
 *note if you already use a rdp server on 3389 change -p <my-port>:3389
 	  -p 2222:22 is for ssh access ( ssh -p 2222 ubuntu@<docker-ip> )
@@ -105,8 +105,18 @@ as `args` in your `docker-compose.override.yml` and run `docker-compose build`.
 ## To run with docker-compose
 
 ```bash
-git clone https://github.com/danielguerra69/ubuntu-xrdp.git
+git clone https://github.com/LizenzFass78851/ubuntu-xrdp.git
 cd ubuntu-xrdp/
 vi docker-compose.override.yml # if you want to override any default value
+docker-compose up -d
+```
+
+## Build Image from Dockerfile
+
+```
+git clone https://github.com/LizenzFass78851/ubuntu-xrdp.git
+cd ubuntu-xrdp/
+docker build . --file Dockerfile --tag ubuntu-xrdp:20.04   # or the version that is built into the dockerfile as the ubuntu version
+vi docker-compose.yml   # to change the settings and to use the locally built image, remove the word "danielguerra/" from the line beginning with "image: " and possibly change the tag ":latest" to the version number selected in the build command
 docker-compose up -d
 ```
