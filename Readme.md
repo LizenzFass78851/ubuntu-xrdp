@@ -2,7 +2,7 @@
 
 Fully implemented Multi User xrdp
 with xorgxrdp and pulseaudio
-on Ubuntu from 16.04 to 22.04
+on Ubuntu from 18.04 to 22.04
 Copy/Paste and sound is working.
 Users can re-login in the same session.
 Xfce4, Firefox are pre installed.
