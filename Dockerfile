@@ -18,7 +18,8 @@ RUN apt-get -yy install  sudo apt-utils software-properties-common $BUILD_DEPS
 WORKDIR /tmp
 RUN apt-get source pulseaudio
 RUN apt-get build-dep -yy pulseaudio
-WORKDIR /tmp/pulseaudio-13.99.1
+RUN mv /tmp/pulseaudio-* /tmp/pulseaudio-11.1
+WORKDIR /tmp/pulseaudio-11.1
 RUN dpkg-buildpackage -rfakeroot -uc -b
 WORKDIR /tmp
 RUN git clone --branch devel --recursive https://github.com/neutrinolabs/xrdp.git
@@ -31,7 +32,7 @@ WORKDIR /tmp
 RUN  apt -yy install libpulse-dev
 RUN git clone --recursive https://github.com/neutrinolabs/pulseaudio-module-xrdp.git
 WORKDIR /tmp/pulseaudio-module-xrdp
-RUN ./bootstrap && ./configure PULSE_DIR=/tmp/pulseaudio-13.99.1
+RUN ./bootstrap && ./configure PULSE_DIR=/tmp/pulseaudio-11.1
 RUN make
 RUN mkdir -p /tmp/so
 RUN cp src/.libs/*.so /tmp/so
@@ -42,9 +43,7 @@ ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt update && apt install -y software-properties-common apt-utils
 RUN add-apt-repository "deb http://archive.canonical.com/ $(lsb_release -sc) partner" && apt update
-RUN apt -y full-upgrade && apt-get install -y \
-  adobe-flashplugin \
-  browser-plugin-freshplayer-pepperflash \
+RUN apt -y full-upgrade && apt install -y \
   ca-certificates \
   crudini \
   firefox \
@@ -72,8 +71,8 @@ RUN apt -y full-upgrade && apt-get install -y \
   xprintidle \
   xrdp \
   $ADDITIONAL_PACKAGES && \
-  apt remove -y light-locker xscreensaver && \
-  apt autoremove -y && \
+  apt-get remove -y light-locker xscreensaver && \
+  apt-get autoremove -yy && \
   rm -rf /var/cache/apt /var/lib/apt/lists && \
   mkdir -p /var/lib/xrdp-pulseaudio-installer
 COPY --from=builder /tmp/so/module-xrdp-source.so /var/lib/xrdp-pulseaudio-installer
