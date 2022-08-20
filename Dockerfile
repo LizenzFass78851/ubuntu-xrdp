@@ -1,10 +1,10 @@
-FROM debian:latest as builder
+FROM debian:bullseye as builder
 MAINTAINER Daniel Guerra
 
 # Install packages
 
 ENV DEBIAN_FRONTEND noninteractive
-RUN sed -i "s/# deb-src/deb-src/g" /etc/apt/sources.list
+RUN sed -Ei 's/^# deb-src /deb-src /' /etc/apt/sources.list
 RUN apt-get -y update
 RUN apt-get -yy upgrade
 ENV BUILD_DEPS="git autoconf pkg-config libssl-dev libpam0g-dev \
@@ -21,7 +21,7 @@ RUN apt-get build-dep -yy pulseaudio
 WORKDIR /tmp/pulseaudio-11.1
 RUN dpkg-buildpackage -rfakeroot -uc -b
 WORKDIR /tmp
-RUN git clone --branch v0.9.16 --recursive https://github.com/neutrinolabs/xrdp.git
+RUN git clone --branch v0.9.19 --recursive https://github.com/neutrinolabs/xrdp.git
 WORKDIR /tmp/xrdp
 RUN ./bootstrap
 RUN ./configure
