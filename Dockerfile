@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 as builder
+FROM debian:latest as builder
 MAINTAINER Daniel Guerra
 
 # Install packages
