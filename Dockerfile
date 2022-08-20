@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 as builder
+FROM ubuntu:22.04 as builder
 MAINTAINER Daniel Guerra
 
 # Install packages
@@ -37,8 +37,7 @@ RUN make
 RUN mkdir -p /tmp/so
 RUN cp src/.libs/*.so /tmp/so
 
-FROM ubuntu:20.04
-
+FROM ubuntu:22.04
 ARG ADDITIONAL_PACKAGES=""
 ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
 ENV TZ="Etc/UTC"
@@ -47,7 +46,6 @@ RUN apt update && apt install -y software-properties-common apt-utils
 RUN apt -y full-upgrade && apt install -y \
   ca-certificates \
   crudini \
-  firefox \
   less \
   locales \
   openssh-server \
@@ -78,6 +76,14 @@ RUN apt -y full-upgrade && apt install -y \
   apt-get autoremove -yy && \
   rm -rf /var/cache/apt /var/lib/apt/lists && \
   mkdir -p /var/lib/xrdp-pulseaudio-installer
+RUN apt update && \
+  add-apt-repository ppa:mozillateam/ppa && \
+  echo "Package: *">>/etc/apt/preferences.d/mozilla-firefox && \
+  echo "Pin: release o=LP-PPA-mozillateam">>/etc/apt/preferences.d/mozilla-firefox && \
+  echo "Pin-Priority: 1001">>/etc/apt/preferences.d/mozilla-firefox && \
+  echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:${distro_codename}";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox && \
+  apt install -y firefox-esr && \
+  rm -rf /var/cache/apt /var/lib/apt/lists
 COPY --from=builder /tmp/so/module-xrdp-source.so /var/lib/xrdp-pulseaudio-installer
 COPY --from=builder /tmp/so/module-xrdp-sink.so /var/lib/xrdp-pulseaudio-installer
 ADD bin /usr/bin
