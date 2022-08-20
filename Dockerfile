@@ -19,7 +19,7 @@ WORKDIR /tmp
 RUN apt-get source pulseaudio
 RUN apt-get build-dep -yy pulseaudio
 WORKDIR /tmp/pulseaudio-11.1
-RUN mk-build-deps --install debian/control
+RUN dpkg-checkbuilddeps
 RUN dpkg-buildpackage -rfakeroot -uc -b
 WORKDIR /tmp
 RUN git clone --branch v0.9.16 --recursive https://github.com/neutrinolabs/xrdp.git
