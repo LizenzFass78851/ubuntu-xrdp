@@ -1,8 +1,3 @@
-# Notes:
-- due to the force with snapd no firefox works under version 22.04 firefox works with earlier versions (20.04 and older).
-
-- audio and possibly copy and paste may no longer be possible due to the conversion of the Dockerfile.
-
 ## Ubuntu from 18.04 to 22.04 (only LTS Versions)  Multi User Remote Desktop Server
 
 Fully implemented Multi User xrdp
