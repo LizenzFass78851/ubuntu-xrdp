@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 as builder
+FROM ubuntu:22.04 as builder
 MAINTAINER Daniel Guerra
 
 # Install packages
@@ -37,7 +37,7 @@ RUN make
 RUN mkdir -p /tmp/so
 RUN cp src/.libs/*.so /tmp/so
 
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 ARG ADDITIONAL_PACKAGES=""
 ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
 ENV DEBIAN_FRONTEND noninteractive
@@ -46,7 +46,7 @@ RUN add-apt-repository "deb http://archive.canonical.com/ $(lsb_release -sc) par
 RUN apt -y full-upgrade && apt install -y \
   ca-certificates \
   crudini \
-  firefox \
+  snapd \
   less \
   locales \
   openssh-server \
@@ -71,6 +71,7 @@ RUN apt -y full-upgrade && apt install -y \
   xprintidle \
   xrdp \
   $ADDITIONAL_PACKAGES && \
+  snap install firefox --channel=esr/stable && \
   apt-get remove -y light-locker xscreensaver && \
   apt-get autoremove -yy && \
   rm -rf /var/cache/apt /var/lib/apt/lists && \
