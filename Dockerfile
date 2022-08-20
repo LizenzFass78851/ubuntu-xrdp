@@ -43,11 +43,6 @@ ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt update && apt install -y software-properties-common apt-utils
 RUN add-apt-repository "deb http://archive.canonical.com/ $(lsb_release -sc) partner" && apt update
-RUN wget https://launchpad.net/ubuntu/+archive/primary/+files/firefox_103.0+build1-0ubuntu0.20.04.1_amd64.deb && \
-  mv firefox_* /tmp/firefox.deb && \
-  apt install -y --allow-downgrades --allow-change-held-packages /tmp/firefox.deb && \
-  echo firefox hold | dpkg --set-selections && \
-  rm /tmp/firefox.deb
 RUN apt -y full-upgrade && apt install -y \
   ca-certificates \
   crudini \
@@ -79,6 +74,11 @@ RUN apt -y full-upgrade && apt install -y \
   apt-get autoremove -yy && \
   rm -rf /var/cache/apt /var/lib/apt/lists && \
   mkdir -p /var/lib/xrdp-pulseaudio-installer
+RUN wget https://launchpad.net/ubuntu/+archive/primary/+files/firefox_103.0+build1-0ubuntu0.20.04.1_amd64.deb && \
+  mv firefox_* /tmp/firefox.deb && \
+  apt install -y --allow-downgrades --allow-change-held-packages /tmp/firefox.deb && \
+  echo firefox hold | dpkg --set-selections && \
+  rm /tmp/firefox.deb
 COPY --from=builder /tmp/so/module-xrdp-source.so /var/lib/xrdp-pulseaudio-installer
 COPY --from=builder /tmp/so/module-xrdp-sink.so /var/lib/xrdp-pulseaudio-installer
 ADD bin /usr/bin
