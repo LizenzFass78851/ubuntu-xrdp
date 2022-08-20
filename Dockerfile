@@ -18,11 +18,11 @@ RUN apt-get -yy install  sudo apt-utils software-properties-common $BUILD_DEPS
 WORKDIR /tmp
 RUN apt-get source pulseaudio
 RUN apt-get build-dep -yy pulseaudio
+RUN mv /tmp/pulseaudio-* /tmp/pulseaudio-11.1
 WORKDIR /tmp/pulseaudio-11.1
-RUN apt-get build-dep debian/changelog
 RUN dpkg-buildpackage -rfakeroot -uc -b
 WORKDIR /tmp
-RUN git clone --branch v0.9.16 --recursive https://github.com/neutrinolabs/xrdp.git
+RUN git clone --branch v0.9.19 --recursive https://github.com/neutrinolabs/xrdp.git
 WORKDIR /tmp/xrdp
 RUN ./bootstrap
 RUN ./configure
