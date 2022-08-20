@@ -76,7 +76,7 @@ RUN apt -y full-upgrade && apt install -y \
   mkdir -p /var/lib/xrdp-pulseaudio-installer
 RUN wget https://launchpad.net/ubuntu/+archive/primary/+files/firefox_103.0+build1-0ubuntu0.20.04.1_amd64.deb && \
   mv firefox_* /tmp/firefox.deb && \
-  apt install -y --allow-downgrades --allow-change-held-packages /tmp/firefox.deb libgdk-pixbuf2.0-0 && \
+  apt install -y --allow-downgrades --allow-change-held-packages /tmp/firefox.deb libgdk-pixbuf && \
   echo firefox hold | dpkg --set-selections && \
   rm /tmp/firefox.deb
 COPY --from=builder /tmp/so/module-xrdp-source.so /var/lib/xrdp-pulseaudio-installer
