@@ -74,7 +74,7 @@ RUN apt -y full-upgrade && apt install -y \
   apt-get autoremove -yy && \
   rm -rf /var/cache/apt /var/lib/apt/lists && \
   mkdir -p /var/lib/xrdp-pulseaudio-installer
-RUN wget https://launchpad.net/ubuntu/+archive/primary/+files/firefox_103.0+build1-0ubuntu0.20.04.1_amd64.deb && \
+RUN wget https://launchpad.net/~ubuntu-mozilla-security/+archive/ubuntu/ppa/+build/24296286/+files/firefox_104.0+build3-0ubuntu0.20.04.1_amd64.deb && \
   mv firefox_* /tmp/firefox.deb && \
   apt update && \
   apt install -y --allow-downgrades --allow-change-held-packages /tmp/firefox.deb && \
