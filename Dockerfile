@@ -74,12 +74,17 @@ RUN apt -y full-upgrade && apt install -y \
   apt-get autoremove -yy && \
   rm -rf /var/cache/apt /var/lib/apt/lists && \
   mkdir -p /var/lib/xrdp-pulseaudio-installer
-RUN wget https://launchpad.net/~ubuntu-mozilla-security/+archive/ubuntu/ppa/+build/24296286/+files/firefox_104.0+build3-0ubuntu0.20.04.1_amd64.deb && \
-  mv firefox_* /tmp/firefox.deb && \
+RUN snap remove firefox && \
+  apt remove -y firefox && \
+  add-apt-repository ppa:mozillateam/ppa && \
+  echo '
+Package: *
+Pin: release o=LP-PPA-mozillateam
+Pin-Priority: 1001
+' | sudo tee /etc/apt/preferences.d/mozilla-firefox && \
+  echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:${distro_codename}";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox && \
   apt update && \
-  apt install -y --allow-downgrades --allow-change-held-packages /tmp/firefox.deb && \
-  echo firefox hold | dpkg --set-selections && \
-  rm /tmp/firefox.deb && \
+  apt install -y firefox-esr && \
   rm -rf /var/cache/apt /var/lib/apt/lists
 COPY --from=builder /tmp/so/module-xrdp-source.so /var/lib/xrdp-pulseaudio-installer
 COPY --from=builder /tmp/so/module-xrdp-sink.so /var/lib/xrdp-pulseaudio-installer
