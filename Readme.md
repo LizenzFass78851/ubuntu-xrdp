@@ -7,6 +7,20 @@ Copy/Paste and sound is working.
 Users can re-login in the same session.
 Xfce4, Firefox are pre installed.
 
+## Create image from Dockerfile and run it via docker-compose
+
+```
+#export ubuntuxrdpversion=18.04
+#export ubuntuxrdpversion=20.04
+export ubuntuxrdpversion=22.04
+git clone https://github.com/LizenzFass78851/ubuntu-xrdp.git -b $ubuntuxrdpversion
+cd ubuntu-xrdp/
+vi docker-compose.override.yml # if you want to override any default value
+docker-compose up -d
+```
+
+---
+
 # Tags
 
 danielguerra/ubuntu-xrdp:18.04  or latest
@@ -111,12 +125,4 @@ vi docker-compose.override.yml # if you want to override any default value
 docker-compose up -d
 ```
 
-## Build Image from Dockerfile
 
-```
-git clone https://github.com/LizenzFass78851/ubuntu-xrdp.git
-cd ubuntu-xrdp/
-docker build . --file Dockerfile --tag ubuntu-xrdp:20.04   # or the version that is built into the dockerfile as the ubuntu version
-vi docker-compose.yml   # to change the settings and to use the locally built image, remove the word "danielguerra/" from the line beginning with "image: " and possibly change the tag ":latest" to the version number selected in the build command
-docker-compose up -d
-```
