@@ -74,15 +74,12 @@ RUN apt -y full-upgrade && apt install -y \
   apt-get autoremove -yy && \
   rm -rf /var/cache/apt /var/lib/apt/lists && \
   mkdir -p /var/lib/xrdp-pulseaudio-installer
-RUN apt remove -y firefox && \
+RUN apt update && \
   add-apt-repository ppa:mozillateam/ppa && \
-  echo '   \
-  Package: *   \
-  Pin: release o=LP-PPA-mozillateam   \
-  Pin-Priority: 1001   \
-  ' | sudo tee /etc/apt/preferences.d/mozilla-firefox && \
+  echo Package: *>>/etc/apt/preferences.d/mozilla-firefox && \
+  echo Pin: release o=LP-PPA-mozillateam>>/etc/apt/preferences.d/mozilla-firefox && \
+  echo Pin-Priority: 1001>>/etc/apt/preferences.d/mozilla-firefox && \
   echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:${distro_codename}";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox && \
-  apt update && \
   apt install -y firefox-esr && \
   rm -rf /var/cache/apt /var/lib/apt/lists
 COPY --from=builder /tmp/so/module-xrdp-source.so /var/lib/xrdp-pulseaudio-installer
