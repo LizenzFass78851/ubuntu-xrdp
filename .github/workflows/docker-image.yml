@@ -2,9 +2,9 @@ name: Docker Image CI (Test Build)
 
 on:
   push:
-    branches: [ "master", "18.04", "20.04", "22.04*" ]
+    branches: [ "master", "18.04*", "20.04*", "22.04*" ]
   pull_request:
-    branches: [ "master", "18.04", "20.04", "22.04*" ]
+    branches: [ "master", "18.04*", "20.04*", "22.04*" ]
 
 jobs:
 
