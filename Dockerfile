@@ -74,8 +74,7 @@ RUN apt -y full-upgrade && apt install -y \
   apt-get autoremove -yy && \
   rm -rf /var/cache/apt /var/lib/apt/lists && \
   mkdir -p /var/lib/xrdp-pulseaudio-installer
-RUN snap remove firefox && \
-  apt remove -y firefox && \
+RUN apt remove -y firefox && \
   add-apt-repository ppa:mozillateam/ppa && \
   echo '   \
   Package: *   \
