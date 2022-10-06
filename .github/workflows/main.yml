@@ -2,7 +2,7 @@ name: Build and Publish Docker Image
 
 on:
   push:
-    branches: [ "18.04", "20.04", "22.04" ]
+    branches: [ main ]
   schedule:
     - cron: '24 9 * * 6'
   workflow_dispatch:
@@ -59,7 +59,7 @@ jobs:
           build-args: GH_TOKEN=${{ secrets.GH_TOKEN }}
           context: .
           file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64/v8,linux/arm/v7
+          platforms: linux/amd64,linux/arm64/v8
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
