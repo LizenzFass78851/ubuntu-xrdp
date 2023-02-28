@@ -7,24 +7,17 @@ Copy/Paste and sound is working.
 Users can re-login in the same session.
 Xfce4, Firefox are pre installed.
 
-## Create image from Dockerfile and run it via docker-compose
-
-```
-#export ubuntuxrdpversion=18.04
-#export ubuntuxrdpversion=20.04
-export ubuntuxrdpversion=22.04
-git clone https://github.com/LizenzFass78851/ubuntu-xrdp.git -b $ubuntuxrdpversion
-cd ubuntu-xrdp/
-vi docker-compose.override.yml # if you want to override any default value
-docker-compose up -d
-```
-
 ---
 
 # Tags
 
-danielguerra/ubuntu-xrdp:18.04  or latest
-danielguerra/ubuntu-xrdp:20.04
+| Image | Tag | (Reserved) |
+|:--------:|:--------------:|:-----------------:|
+| ghcr.io/lizenzfass78851/ubuntu-xrdp | master | (Reserved) |
+| ghcr.io/lizenzfass78851/ubuntu-xrdp | 18.04 | (Reserved) |
+| ghcr.io/lizenzfass78851/ubuntu-xrdp | 20.04 | (Reserved) |
+| ghcr.io/lizenzfass78851/ubuntu-xrdp | 22.04 | (Reserved) |
+| ghcr.io/lizenzfass78851/ubuntu-xrdp | kali | (Reserved) |
 
 ## Usage
 
@@ -32,7 +25,7 @@ Start the rdp server
 (WARNING: use the --shm-size 1g or firefox/chrome will crash)
 
 ```bash
-docker run -d --name uxrdp --hostname terminalserver --shm-size 1g -p 3389:3389 -p 2222:22 danielguerra/ubuntu-xrdp:latest
+docker run -d --name uxrdp --hostname terminalserver --shm-size 1g -p 3389:3389 -p 2222:22 ghcr.io/lizenzfass78851/ubuntu-xrdp:master
 ```
 *note if you already use a rdp server on 3389 change -p <my-port>:3389
 	  -p 2222:22 is for ssh access ( ssh -p 2222 ubuntu@<docker-ip> )
@@ -121,7 +114,7 @@ as `args` in your `docker-compose.override.yml` and run `docker-compose build`.
 ```bash
 git clone https://github.com/LizenzFass78851/ubuntu-xrdp.git
 cd ubuntu-xrdp/
-vi docker-compose.override.yml # if you want to override any default value
+nano docker-compose.yml # if you want to override any default value
 docker-compose up -d
 ```
 
