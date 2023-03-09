@@ -2,7 +2,7 @@ version: '3.5'
 services:
   terminalserver:
     #build: ./
-    image: ghcr.io/lizenzfass78851/ubuntu-xrdp:master
+    image: ghcr.io/lizenzfass78851/ubuntu-xrdp:latest
     container_name: uxrdp
     hostname: terminalserver
     restart: always
