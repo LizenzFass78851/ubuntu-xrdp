@@ -49,7 +49,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
-            latest=${{ startsWith(github.ref, 'refs/heads/main/master') }}
+            latest=${{ startsWith(github.ref, 'refs/heads/master') }}
 
       - name: Build and push main Docker image
         id: build
