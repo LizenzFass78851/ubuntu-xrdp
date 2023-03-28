@@ -17,7 +17,8 @@ Xfce4, Firefox are pre installed.
 | ghcr.io/lizenzfass78851/ubuntu-xrdp | 18.04 | [![Build and Publish Docker Image](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml/badge.svg?branch=18.04)](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml) |
 | ghcr.io/lizenzfass78851/ubuntu-xrdp | 20.04 | [![Build and Publish Docker Image](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml/badge.svg?branch=20.04)](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml) |
 | ghcr.io/lizenzfass78851/ubuntu-xrdp | 22.04 | [![Build and Publish Docker Image](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml/badge.svg?branch=22.04)](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml) |
-| ghcr.io/lizenzfass78851/ubuntu-xrdp | kali | [![Build and Publish Docker Image](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml/badge.svg?branch=kali)](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml) |
+| ghcr.io/lizenzfass78851/ubuntu-xrdp | kali-light | [![Build and Publish Docker Image](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml/badge.svg?branch=kali-light)](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml) |
+| ghcr.io/lizenzfass78851/ubuntu-xrdp | kali-default | [![Build and Publish Docker Image](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml/badge.svg?branch=kali-default)](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml) |
 
 ## Usage
 
