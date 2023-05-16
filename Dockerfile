@@ -1,6 +1,9 @@
 FROM ubuntu:22.04 as builder
 MAINTAINER Daniel Guerra
 
+RUN sed -E -i 's#http://[^\s]*archive\.ubuntu\.com/ubuntu#http://ftp.fau.de/ubuntu#g' /etc/apt/sources.list
+RUN sed -E -i 's#http://[^\s]*ports\.ubuntu\.com/ubuntu-ports#http://ftp.fau.de/ubuntu-ports#g' /etc/apt/sources.list
+
 # Install packages
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -38,11 +41,15 @@ RUN mkdir -p /tmp/so
 RUN cp src/.libs/*.so /tmp/so
 
 FROM ubuntu:22.04
+
+RUN sed -E -i 's#http://[^\s]*archive\.ubuntu\.com/ubuntu#http://ftp.fau.de/ubuntu#g' /etc/apt/sources.list
+RUN sed -E -i 's#http://[^\s]*ports\.ubuntu\.com/ubuntu-ports#http://ftp.fau.de/ubuntu-ports#g' /etc/apt/sources.list
+
 ARG ADDITIONAL_PACKAGES=""
 ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt update && apt install -y software-properties-common apt-utils
-RUN add-apt-repository "deb http://archive.canonical.com/ $(lsb_release -sc) partner" && apt update
+#RUN add-apt-repository "deb http://archive.canonical.com/ $(lsb_release -sc) partner" && apt update
 RUN apt -y full-upgrade && apt install -y \
   ca-certificates \
   crudini \
