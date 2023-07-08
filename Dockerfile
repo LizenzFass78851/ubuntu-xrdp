@@ -1,8 +1,8 @@
 FROM ubuntu:22.04 as builder
 MAINTAINER Daniel Guerra
 
-RUN sed -E -i 's#http://[^\s]*archive\.ubuntu\.com/ubuntu#http://ftp.fau.de/ubuntu#g' /etc/apt/sources.list
-RUN sed -E -i 's#http://[^\s]*ports\.ubuntu\.com/ubuntu-ports#http://ftp.fau.de/ubuntu-ports#g' /etc/apt/sources.list
+#RUN sed -E -i 's#http://[^\s]*archive\.ubuntu\.com/ubuntu#http://ftp.fau.de/ubuntu#g' /etc/apt/sources.list
+#RUN sed -E -i 's#http://[^\s]*ports\.ubuntu\.com/ubuntu-ports#http://ftp.fau.de/ubuntu-ports#g' /etc/apt/sources.list
 
 # Install packages
 
