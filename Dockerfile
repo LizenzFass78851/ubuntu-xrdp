@@ -42,8 +42,8 @@ RUN cp src/.libs/*.so /tmp/so
 
 FROM ubuntu:22.04
 
-RUN sed -E -i 's#http://[^\s]*archive\.ubuntu\.com/ubuntu#http://ftp.fau.de/ubuntu#g' /etc/apt/sources.list
-RUN sed -E -i 's#http://[^\s]*ports\.ubuntu\.com/ubuntu-ports#http://ftp.fau.de/ubuntu-ports#g' /etc/apt/sources.list
+#RUN sed -E -i 's#http://[^\s]*archive\.ubuntu\.com/ubuntu#http://ftp.fau.de/ubuntu#g' /etc/apt/sources.list
+#RUN sed -E -i 's#http://[^\s]*ports\.ubuntu\.com/ubuntu-ports#http://ftp.fau.de/ubuntu-ports#g' /etc/apt/sources.list
 
 ARG ADDITIONAL_PACKAGES=""
 ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
