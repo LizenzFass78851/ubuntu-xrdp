@@ -13,7 +13,7 @@ env:
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
-  build_amd64_arm64:
+  build_amd64:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -58,7 +58,7 @@ jobs:
           build-args: GH_TOKEN=${{ github.token }}
           context: .
           file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64/v8
+          platforms: linux/amd64
           cache-to: type=gha,mode=max,ignore-error=true
           cache-from: type=gha
           push: true
