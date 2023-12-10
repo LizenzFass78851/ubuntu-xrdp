@@ -5,12 +5,12 @@ MAINTAINER Daniel Guerra
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN sed -i "s/# deb-src/deb-src/g" /etc/apt/sources.list
-RUN apt -y update
-RUN apt -yy upgrade
+RUN apt-get -y update
+RUN apt-get -yy upgrade
 ENV BUILD_DEPS="git autoconf pkg-config libssl-dev libpam0g-dev \
     libx11-dev libxfixes-dev libxrandr-dev nasm xsltproc flex \
     bison libxml2-dev dpkg-dev libcap-dev"
-RUN apt -yy install  sudo apt-utils software-properties-common $BUILD_DEPS
+RUN apt-get -yy install  sudo apt-utils software-properties-common $BUILD_DEPS
 
 
 # Build xrdp
@@ -71,8 +71,8 @@ RUN apt -y full-upgrade && apt install -y \
   xprintidle \
   xrdp \
   $ADDITIONAL_PACKAGES && \
-  apt remove -y light-locker xscreensaver && \
-  apt autoremove -yy && \
+  apt-get remove -y light-locker xscreensaver && \
+  apt-get autoremove -yy && \
   rm -rf /var/cache/apt /var/lib/apt/lists && \
   mkdir -p /var/lib/xrdp-pulseaudio-installer
 RUN apt update && \
