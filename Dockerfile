@@ -1,19 +1,16 @@
 FROM ubuntu:22.04 as builder
 MAINTAINER Daniel Guerra
 
-#RUN sed -E -i 's#http://[^\s]*archive\.ubuntu\.com/ubuntu#http://ftp.fau.de/ubuntu#g' /etc/apt/sources.list
-#RUN sed -E -i 's#http://[^\s]*ports\.ubuntu\.com/ubuntu-ports#http://ftp.fau.de/ubuntu-ports#g' /etc/apt/sources.list
-
 # Install packages
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN sed -i "s/# deb-src/deb-src/g" /etc/apt/sources.list
-RUN apt-get -y update
-RUN apt-get -yy upgrade
+RUN apt -y update
+RUN apt -yy upgrade
 ENV BUILD_DEPS="git autoconf pkg-config libssl-dev libpam0g-dev \
     libx11-dev libxfixes-dev libxrandr-dev nasm xsltproc flex \
     bison libxml2-dev dpkg-dev libcap-dev"
-RUN apt-get -yy install  sudo apt-utils software-properties-common $BUILD_DEPS
+RUN apt -yy install  sudo apt-utils software-properties-common $BUILD_DEPS
 
 
 # Build xrdp
@@ -41,9 +38,6 @@ RUN mkdir -p /tmp/so
 RUN cp src/.libs/*.so /tmp/so
 
 FROM ubuntu:22.04
-
-#RUN sed -E -i 's#http://[^\s]*archive\.ubuntu\.com/ubuntu#http://ftp.fau.de/ubuntu#g' /etc/apt/sources.list
-#RUN sed -E -i 's#http://[^\s]*ports\.ubuntu\.com/ubuntu-ports#http://ftp.fau.de/ubuntu-ports#g' /etc/apt/sources.list
 
 ARG ADDITIONAL_PACKAGES=""
 ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
@@ -77,8 +71,8 @@ RUN apt -y full-upgrade && apt install -y \
   xprintidle \
   xrdp \
   $ADDITIONAL_PACKAGES && \
-  apt-get remove -y light-locker xscreensaver && \
-  apt-get autoremove -yy && \
+  apt remove -y light-locker xscreensaver && \
+  apt autoremove -yy && \
   rm -rf /var/cache/apt /var/lib/apt/lists && \
   mkdir -p /var/lib/xrdp-pulseaudio-installer
 RUN apt update && \
