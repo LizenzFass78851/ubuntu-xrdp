@@ -2,7 +2,7 @@ name: Build and Publish Docker Image
 
 on:
   push:
-    branches: [ "master", "18.04", "20.04", "22.04", "kali-light", "kali-default" ]
+    branches: [ "master", "main", "16.04*", "18.04*", "20.04*", "22.04*", "kali*" ]
   schedule:
     - cron: '10 14 */3 * 2'
   workflow_dispatch:
@@ -10,14 +10,11 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  IMAGE_TAG: ${{ github.sha }}
 
 jobs:
   build_amd64:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        target: [ "master", "18.04", "20.04", "22.04", "kali-light", "kali-default" ]
     permissions:
       contents: read
       packages: write
@@ -26,8 +23,6 @@ jobs:
       - name: Checkout Dockerfile
         id: checkout
         uses: actions/checkout@v3
-        with:
-          ref: ${{ matrix.target }}
 
       - name: Setup QEMU
         id: qemu
