@@ -90,8 +90,8 @@ ADD etc /etc
 ADD autostart /etc/xdg/autostart
 
 # Configure
-RUN mkdir /var/run/dbus && \
-  cp /etc/X11/xrdp/xorg.conf /etc/X11 && \
+RUN if [ ! -d "/var/run/dbus" ]; then mkdir /var/run/dbus; fi
+RUN cp /etc/X11/xrdp/xorg.conf /etc/X11 && \
   sed -i "s/console/anybody/g" /etc/X11/Xwrapper.config && \
   sed -i "s/xrdp\/xorg/xorg/g" /etc/xrdp/sesman.ini && \
   locale-gen en_US.UTF-8 && \
