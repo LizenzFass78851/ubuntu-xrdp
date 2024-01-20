@@ -67,6 +67,7 @@ RUN apt -y full-upgrade && apt install -y \
   xfce4-taskmanager \
   xfce4-terminal \
   xfce4-xkb-plugin \
+  dbus-x11 \
   xorgxrdp \
   xprintidle \
   xrdp \
