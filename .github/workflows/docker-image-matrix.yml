@@ -1,4 +1,4 @@
-name: Build and Publish Docker Image
+name: Build as Matrix and Publish Docker Image
 
 on:
   schedule:
