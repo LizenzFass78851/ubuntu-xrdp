@@ -2,7 +2,7 @@
 
 Fully implemented Multi User xrdp
 with xorgxrdp and pulseaudio
-on Ubuntu from 18.04 to 24.04
+on Ubuntu from 20.04 to 24.04
 Copy/Paste and sound is working.
 Users can re-login in the same session.
 Xfce4, Firefox are pre installed.
@@ -14,7 +14,6 @@ Xfce4, Firefox are pre installed.
 | Image | Tag | Build |
 |:------------------:|:--------------:|:-----------------:|
 | ghcr.io/lizenzfass78851/ubuntu-xrdp | master | [![Build and Publish Docker Image](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml/badge.svg?branch=master)](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml) |
-| ghcr.io/lizenzfass78851/ubuntu-xrdp | 18.04 | [![Build and Publish Docker Image](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml/badge.svg?branch=18.04)](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml) |
 | ghcr.io/lizenzfass78851/ubuntu-xrdp | 20.04 | [![Build and Publish Docker Image](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml/badge.svg?branch=20.04)](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml) |
 | ghcr.io/lizenzfass78851/ubuntu-xrdp | 22.04 | [![Build and Publish Docker Image](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml/badge.svg?branch=22.04)](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml) |
 | ghcr.io/lizenzfass78851/ubuntu-xrdp | 24.04 | [![Build and Publish Docker Image](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml/badge.svg?branch=24.04)](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml) |

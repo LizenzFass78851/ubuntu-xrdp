@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: ["master", "18.04", "20.04", "22.04", "24.04", "kali-light", "kali-default"]
+        target: ["master", "20.04", "22.04", "24.04", "kali-light", "kali-default"]
     runs-on: ubuntu-latest
     permissions:
       contents: read
