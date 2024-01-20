@@ -2,7 +2,7 @@ name: Build and Publish Docker Image
 
 on:
   push:
-    branches: [ "master", "main", "16.04*", "18.04*", "20.04*", "22.04*", "kali*" ]
+    branches: [ "master", "main", "16.04*", "18.04*", "20.04*", "22.04*", "24.04*", "kali*" ]
   schedule:
     - cron: '10 14 */3 * 2'
   workflow_dispatch:
