@@ -1,8 +1,8 @@
 name: Build and Publish Docker Image
 
 on:
-  push:
-    branches: [ "master", "main", "16.04*", "18.04*", "20.04*", "22.04*", "24.04*", "kali*" ]
+  schedule:
+    - cron: '10 14 */3 * 2'
   workflow_dispatch:
 
 env:
@@ -12,15 +12,23 @@ env:
 
 jobs:
   build_amd64:
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ["master", "18.04", "20.04", "22.04", "24.04", "kali-light", "kali-default"]
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+    env:
+      TARGET_BRANCH: refs/heads/${{ matrix.target }}
 
     steps:
       - name: Checkout Dockerfile
         id: checkout
         uses: actions/checkout@v3
+        with:
+          ref: ${{ matrix.target }}
 
       - name: Setup QEMU
         id: qemu
@@ -47,7 +55,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
-            latest=${{ startsWith(github.ref, 'refs/heads/master') }}
+            latest=${{ startsWith(env.TARGET_BRANCH, 'refs/heads/master') }}
+          tags: ${{ matrix.target }}
 
       - name: Build and push main Docker image
         id: build
