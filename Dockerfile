@@ -41,6 +41,7 @@ FROM ubuntu:20.04
 
 ARG ADDITIONAL_PACKAGES=""
 ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
+ENV TZ="Etc/UTC"
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt update && apt install -y software-properties-common apt-utils
 RUN apt -y full-upgrade && apt install -y \
@@ -70,6 +71,7 @@ RUN apt -y full-upgrade && apt install -y \
   xorgxrdp \
   xprintidle \
   xrdp \
+  tzdata \
   $ADDITIONAL_PACKAGES && \
   apt-get remove -y light-locker xscreensaver && \
   apt-get autoremove -yy && \
@@ -91,7 +93,8 @@ RUN mkdir /var/run/dbus && \
   echo "xfce4-session" >> /etc/skel/.Xsession && \
   cp -r /etc/ssh /ssh_orig && \
   rm -rf /etc/ssh/* && \
-  rm -rf /etc/xrdp/rsakeys.ini /etc/xrdp/*.pem
+  rm -rf /etc/xrdp/rsakeys.ini /etc/xrdp/*.pem && \
+  ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Docker config
 VOLUME ["/etc/ssh","/home"]
