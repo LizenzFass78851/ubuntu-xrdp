@@ -9,6 +9,7 @@ services:
     shm_size: 1g
     environment:
        IDLETIME: 11
+       TZ: "Etc/UTC"
     ports:
       - "3389:3389"
       - "2222:22"

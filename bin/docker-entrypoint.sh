@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Set timezone from env
+ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 # Add users
 bash /usr/bin/create-users.sh
 
