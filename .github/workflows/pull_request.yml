@@ -1,0 +1,24 @@
+name: Docker Image CI (Test Build)
+
+on:
+  pull_request:
+    branches: [ "20.04*", "22.04*", "24.04*", "kali-*" ]
+
+env:
+  IMAGE_NAME: ${{ github.event.pull_request.base.repo.name }}
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v5
+    - name: Build the Docker image
+      run: |
+        docker \
+        build . \
+        --file Dockerfile \
+        --tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
