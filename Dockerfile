@@ -1,10 +1,11 @@
-FROM ubuntu:22.04 as builder
+FROM ubuntu:24.04 as builder
 MAINTAINER Daniel Guerra
 
 # Install packages
 
 ENV DEBIAN_FRONTEND noninteractive
-RUN sed -i "s/# deb-src/deb-src/g" /etc/apt/sources.list
+RUN cp /etc/apt/sources.list.d/ubuntu.sources /etc/apt/sources.list.d/ubuntu-src.sources && \
+  sed -i "s/deb/deb-src/g" /etc/apt/sources.list.d/ubuntu-src.sources
 RUN apt-get -y update
 RUN apt-get -yy upgrade
 ENV BUILD_DEPS="git autoconf pkg-config libssl-dev libpam0g-dev \
@@ -37,12 +38,13 @@ RUN make
 RUN mkdir -p /tmp/so
 RUN cp src/.libs/*.so /tmp/so
 
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 ARG ADDITIONAL_PACKAGES=""
 ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
 ENV TZ="Etc/UTC"
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt update && apt install -y software-properties-common apt-utils
+RUN echo -e '#!/bin/sh\nexit 1' | tee /usr/sbin/telinit
 RUN apt -y full-upgrade && apt install -y \
   ca-certificates \
   crudini \
