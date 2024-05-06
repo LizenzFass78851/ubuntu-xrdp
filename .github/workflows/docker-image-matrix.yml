@@ -1,0 +1,136 @@
+name: Build as Matrix and Publish Docker Image
+
+on:
+  schedule:
+    - cron: '20 14 * * 2'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  build_amd64_1:
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ["20.04", "22.04", "24.04", "kali-light"]
+    outputs:
+      kali-light-success: ${{ steps.build.outcome == 'success' && matrix.target == 'kali-light' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      TARGET_BRANCH: refs/heads/${{ matrix.target }}
+
+    steps:
+      - name: Checkout Dockerfile
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.target }}
+
+      - name: Setup QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v3
+        with:
+          image: tonistiigi/binfmt:latest
+          platforms: all
+      
+      - name: Setup Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        id: ghcr
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ github.token }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            latest=${{ startsWith(env.TARGET_BRANCH, 'refs/heads/24.04') }}
+          tags: ${{ matrix.target }}
+
+      - name: Build and push main Docker image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          build-args: GH_TOKEN=${{ github.token }}
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64
+          cache-to: type=gha,mode=max,ignore-error=true
+          cache-from: type=gha
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  build_amd64_2:
+    needs: build_amd64_1
+    if: ${{ needs.build_amd64_1.outputs.kali-light-success }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ["kali-default"]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      TARGET_BRANCH: refs/heads/${{ matrix.target }}
+
+    steps:
+      - name: Checkout Dockerfile
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.target }}
+
+      - name: Setup QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v3
+        with:
+          image: tonistiigi/binfmt:latest
+          platforms: all
+      
+      - name: Setup Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        id: ghcr
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ github.token }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: ${{ matrix.target }}
+
+      - name: Build and push main Docker image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          build-args: GH_TOKEN=${{ github.token }}
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64
+          cache-to: type=gha,mode=max,ignore-error=true
+          cache-from: type=gha
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
