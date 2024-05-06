@@ -1,16 +1,27 @@
-## Ubuntu 20.04/18.04/16.04  Multi User Remote Desktop Server
+## Ubuntu Multi User Remote Desktop Server
 
 Fully implemented Multi User xrdp
 with xorgxrdp and pulseaudio
-on Ubuntu 20.04/18.04
+on Ubuntu from 20.04 to 24.04
 Copy/Paste and sound is working.
 Users can re-login in the same session.
 Xfce4, Firefox are pre installed.
 
+---
+
 # Tags
 
-danielguerra/ubuntu-xrdp:18.04  or latest
-danielguerra/ubuntu-xrdp:20.04
+| Image | Tag | Build |
+|:------------------:|:--------------:|:-----------------:|
+| ghcr.io/lizenzfass78851/ubuntu-xrdp | 20.04 | [![Build and Publish Docker Image](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml/badge.svg?branch=20.04)](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml) |
+| ghcr.io/lizenzfass78851/ubuntu-xrdp | 22.04 | [![Build and Publish Docker Image](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml/badge.svg?branch=22.04)](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml) |
+| ghcr.io/lizenzfass78851/ubuntu-xrdp | 24.04 | [![Build and Publish Docker Image](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml/badge.svg?branch=24.04)](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml) |
+| ghcr.io/lizenzfass78851/ubuntu-xrdp | kali-light | [![Build and Publish Docker Image](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml/badge.svg?branch=kali-light)](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml) |
+| ghcr.io/lizenzfass78851/ubuntu-xrdp | kali-default | [![Build and Publish Docker Image](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml/badge.svg?branch=kali-default)](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image.yml) |
+
+- Matrix Build State
+
+[![Build and Publish Docker Image](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image-matrix.yml/badge.svg)](https://github.com/LizenzFass78851/ubuntu-xrdp/actions/workflows/docker-image-matrix.yml)
 
 ## Usage
 
@@ -18,7 +29,7 @@ Start the rdp server
 (WARNING: use the --shm-size 1g or firefox/chrome will crash)
 
 ```bash
-docker run -d --name uxrdp --hostname terminalserver --shm-size 1g -p 3389:3389 -p 2222:22 danielguerra/ubuntu-xrdp:20.04
+docker run -d --name uxrdp --hostname terminalserver --shm-size 1g -p 3389:3389 -p 2222:22 ghcr.io/lizenzfass78851/ubuntu-xrdp:latest
 ```
 *note if you already use a rdp server on 3389 change -p <my-port>:3389
 	  -p 2222:22 is for ssh access ( ssh -p 2222 ubuntu@<docker-ip> )
@@ -105,8 +116,10 @@ as `args` in your `docker-compose.override.yml` and run `docker-compose build`.
 ## To run with docker-compose
 
 ```bash
-git clone https://github.com/danielguerra69/ubuntu-xrdp.git
+git clone https://github.com/LizenzFass78851/ubuntu-xrdp.git
 cd ubuntu-xrdp/
-vi docker-compose.override.yml # if you want to override any default value
+nano docker-compose.yml # if you want to override any default value
 docker-compose up -d
 ```
+
+
