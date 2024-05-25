@@ -9,7 +9,7 @@ RUN apt-get -y update
 RUN apt-get -yy upgrade
 ENV BUILD_DEPS="git autoconf pkg-config libssl-dev libpam0g-dev \
     libx11-dev libxfixes-dev libxrandr-dev nasm xsltproc flex \
-    bison libxml2-dev dpkg-dev libcap-dev"
+    bison libxml2-dev dpkg-dev libcap-dev libxkbfile-dev"
 RUN apt-get -yy install  sudo apt-utils software-properties-common $BUILD_DEPS
 
 
