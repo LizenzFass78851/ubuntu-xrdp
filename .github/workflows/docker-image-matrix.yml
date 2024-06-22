@@ -62,7 +62,7 @@ jobs:
 
       - name: Build and push main Docker image
         id: build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v5
         with:
           build-args: GH_TOKEN=${{ github.token }}
           context: .
@@ -123,7 +123,7 @@ jobs:
 
       - name: Build and push main Docker image
         id: build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v5
         with:
           build-args: GH_TOKEN=${{ github.token }}
           context: .
