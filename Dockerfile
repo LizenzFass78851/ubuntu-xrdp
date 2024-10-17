@@ -1,15 +1,18 @@
-FROM ubuntu:20.04 AS builder
+FROM kalilinux/kali-rolling AS builder
 MAINTAINER Daniel Guerra
 
 # Install packages
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN sed -i "s/# deb-src/deb-src/g" /etc/apt/sources.list
+ARG DEBIAN_VERSION_FOR_MIRORR="bookworm"
+RUN echo "deb-src http://http.kali.org/kali kali-rolling main non-free contrib" | tee -a /etc/apt/sources.list
+RUN echo "deb http://ftp.debian.org/debian $DEBIAN_VERSION_FOR_MIRORR main" >> /etc/apt/sources.list.d/debian-$DEBIAN_VERSION_FOR_MIRORR.list
 RUN apt-get -y update && apt-get -yy dist-upgrade
 ENV BUILD_DEPS="git autoconf pkg-config libssl-dev libpam0g-dev \
     libx11-dev libxfixes-dev libxrandr-dev nasm xsltproc flex \
     bison libxml2-dev dpkg-dev libcap-dev libxkbfile-dev"
-RUN apt-get -yy install  sudo apt-utils software-properties-common $BUILD_DEPS
+ENV BUILD_DEPS2="liblirc-dev"
+RUN apt-get -yy install  sudo apt-utils software-properties-common $BUILD_DEPS $BUILD_DEPS2
 
 
 # Build xrdp
@@ -21,7 +24,7 @@ RUN mv /tmp/pulseaudio-* /tmp/pulseaudio-11.1
 WORKDIR /tmp/pulseaudio-11.1
 RUN dpkg-buildpackage -rfakeroot -uc -b
 WORKDIR /tmp
-RUN git clone --branch v0.10.0 --recursive https://github.com/neutrinolabs/xrdp.git
+RUN git clone --branch devel --recursive https://github.com/neutrinolabs/xrdp.git
 WORKDIR /tmp/xrdp
 RUN ./bootstrap
 RUN ./configure
@@ -36,17 +39,17 @@ RUN make
 RUN mkdir -p /tmp/so
 RUN cp src/.libs/*.so /tmp/so
 
-FROM ubuntu:20.04
-
+FROM kalilinux/kali-rolling
 ARG ADDITIONAL_PACKAGES=""
 ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
 ENV TZ="Etc/UTC"
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt update && apt install -y software-properties-common apt-utils
-RUN apt -y dist-upgrade && apt install -y \
+COPY --from=builder /etc/apt/sources.list.d/debian*.list /etc/apt/sources.list.d/
+RUN apt update && apt -y dist-upgrade && apt install -y \
   ca-certificates \
   crudini \
-  firefox \
+  dbus-x11 \
+  kali-desktop-xfce \
   less \
   locales \
   openssh-server \
@@ -55,19 +58,9 @@ RUN apt -y dist-upgrade && apt install -y \
   supervisor \
   uuid-runtime \
   vim \
-  vlc \
   wget \
   xauth \
   xautolock \
-  xfce4 \
-  xfce4-clipman-plugin \
-  xfce4-cpugraph-plugin \
-  xfce4-netload-plugin \
-  xfce4-screenshooter \
-  xfce4-taskmanager \
-  xfce4-terminal \
-  xfce4-xkb-plugin \
-  dbus-x11 \
   xorgxrdp \
   xprintidle \
   xrdp \
@@ -89,8 +82,9 @@ RUN cp /etc/X11/xrdp/xorg.conf /etc/X11 && \
   sed -i "s/console/anybody/g" /etc/X11/Xwrapper.config && \
   sed -i "s/xrdp\/xorg/xorg/g" /etc/xrdp/sesman.ini && \
   locale-gen en_US.UTF-8 && \
-  echo "pulseaudio -D --enable-memfd=True" > /etc/skel/.Xsession && \
-  echo "xfce4-session" >> /etc/skel/.Xsession && \
+  echo "#!/bin/sh" > /usr/bin/start-pulseaudio-x11  && \
+  echo "pulseaudio -D --enable-memfd=True" >> /usr/bin/start-pulseaudio-x11  && \
+  echo "xfce4-session" >> /etc/skel/.Xclients && \
   cp -r /etc/ssh /ssh_orig && \
   rm -rf /etc/ssh/* && \
   rm -rf /etc/xrdp/rsakeys.ini /etc/xrdp/*.pem && \
