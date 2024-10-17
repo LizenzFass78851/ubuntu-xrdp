@@ -1,11 +1,12 @@
 ARG DEBIAN_FRONTEND=noninteractive
-FROM ubuntu:22.04 AS builder
+FROM ubuntu:24.04 AS builder
 
 # Install packages
 
 ARG DEBIAN_FRONTEND
-RUN sed -i "s/# deb-src/deb-src/g" /etc/apt/sources.list
-RUN sed -E -i 's#http://[^[:space:]]*ubuntu\.com/ubuntu#http://mirrors.edge.kernel.org/ubuntu#g' /etc/apt/sources.list
+RUN sed -E -i 's#http://[^[:space:]]*ubuntu\.com/ubuntu#http://mirrors.edge.kernel.org/ubuntu#g' /etc/apt/sources.list.d/ubuntu.sources
+RUN cp /etc/apt/sources.list.d/ubuntu.sources /etc/apt/sources.list.d/ubuntu-src.sources && \
+  sed -i "s/deb/deb-src/g" /etc/apt/sources.list.d/ubuntu-src.sources
 RUN apt-get -y update && apt-get -yy dist-upgrade
 ENV BUILD_DEPS="git autoconf pkg-config libssl-dev libpam0g-dev \
     libx11-dev libxfixes-dev libxrandr-dev nasm xsltproc flex \
@@ -34,14 +35,15 @@ RUN ./bootstrap && ./configure PULSE_DIR=/tmp/pulseaudio-11.1
 RUN make
 RUN mkdir -p /tmp/so && cp src/.libs/*.so /tmp/so
 
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 ARG ADDITIONAL_PACKAGES=""
 ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
 ENV TZ="Etc/UTC"
 ARG DEBIAN_FRONTEND
 ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND}
-RUN sed -E -i 's#http://[^[:space:]]*ubuntu\.com/ubuntu#http://mirrors.edge.kernel.org/ubuntu#g' /etc/apt/sources.list
+RUN sed -E -i 's#http://[^[:space:]]*ubuntu\.com/ubuntu#http://mirrors.edge.kernel.org/ubuntu#g' /etc/apt/sources.list.d/ubuntu.sources
 RUN apt update && apt install -y software-properties-common apt-utils
+RUN echo -e '#!/bin/sh\nexit 1' | tee /usr/sbin/telinit
 RUN apt -y dist-upgrade && apt install -y \
   ca-certificates \
   crudini \
