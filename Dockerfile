@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 AS builder
+FROM ubuntu:22.04 AS builder
 MAINTAINER Daniel Guerra
 
 # Install packages
@@ -21,7 +21,7 @@ RUN mv /tmp/pulseaudio-* /tmp/pulseaudio-11.1
 WORKDIR /tmp/pulseaudio-11.1
 RUN dpkg-buildpackage -rfakeroot -uc -b
 WORKDIR /tmp
-RUN git clone --branch v0.10.0 --recursive https://github.com/neutrinolabs/xrdp.git
+RUN git clone --branch v0.10 --recursive https://github.com/neutrinolabs/xrdp.git
 WORKDIR /tmp/xrdp
 RUN ./bootstrap
 RUN ./configure
@@ -36,8 +36,7 @@ RUN make
 RUN mkdir -p /tmp/so
 RUN cp src/.libs/*.so /tmp/so
 
-FROM ubuntu:20.04
-
+FROM ubuntu:22.04
 ARG ADDITIONAL_PACKAGES=""
 ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
 ENV TZ="Etc/UTC"
@@ -46,7 +45,6 @@ RUN apt update && apt install -y software-properties-common apt-utils
 RUN apt -y dist-upgrade && apt install -y \
   ca-certificates \
   crudini \
-  firefox \
   less \
   locales \
   openssh-server \
@@ -77,6 +75,14 @@ RUN apt -y dist-upgrade && apt install -y \
   apt-get autoremove -yy && \
   rm -rf /var/cache/apt /var/lib/apt/lists && \
   mkdir -p /var/lib/xrdp-pulseaudio-installer
+RUN install -d -m 0755 /etc/apt/keyrings && \
+  wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | tee /etc/apt/keyrings/packages.mozilla.org.asc && \
+  gpg -n -q --import --import-options import-show /etc/apt/keyrings/packages.mozilla.org.asc | awk '/pub/{getline; gsub(/^ +| +$/,""); if($0 == "35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3") print "\nThe key fingerprint matches ("$0").\n"; else print "\nVerification failed: the fingerprint ("$0") does not match the expected one.\n"}' && \
+  echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" | sudo tee -a /etc/apt/sources.list.d/mozilla.list && \
+  printf 'Package: *\nPin: origin packages.mozilla.org\nPin-Priority: 1000\n' | sudo tee /etc/apt/preferences.d/mozilla && \
+  echo 'Unattended-Upgrade::Allowed-Origins:: "packages.mozilla.org:mozilla";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox && \
+  apt update && apt install -y firefox-esr && \
+  rm -rf /var/cache/apt /var/lib/apt/lists
 COPY --from=builder /tmp/so/module-xrdp-source.so /var/lib/xrdp-pulseaudio-installer
 COPY --from=builder /tmp/so/module-xrdp-sink.so /var/lib/xrdp-pulseaudio-installer
 ADD bin /usr/bin
