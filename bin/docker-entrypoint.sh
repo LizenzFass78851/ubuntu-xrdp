@@ -35,6 +35,18 @@ if [ ! -f "/etc/ssh/ssh_host_dsa_key" ];
 		ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa
 fi
 
+# generate fresh ed25519 key if needed
+if [ ! -f "/etc/ssh/ssh_host_ed25519_key" ];
+	then
+		ssh-keygen -f /etc/ssh/ssh_host_ed25519_key -N '' -t ed25519
+fi
+
+# generate fresh ecdsa key if needed
+if [ ! -f "/etc/ssh/ssh_host_ecdsa_key" ];
+	then
+		ssh-keygen -f /etc/ssh/ssh_host_ecdsa_key -N '' -t ecdsa
+fi
+
 #prepare run dir
 mkdir -p /var/run/sshd
 
