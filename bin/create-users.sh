@@ -8,7 +8,8 @@ while read id username hash groups; do
         # Create group
         addgroup --gid $id $username
         # Create user
-        useradd -m -u $id -s /bin/bash -g $username $username
+        if [ ! -d /home/$username ]; then mkdir /home/$username; fi
+        useradd -u $id -s /bin/bash -g $username -d /home/$username -M $username
         # Set password
         echo "$username:$hash" | /usr/sbin/chpasswd -e
         # Add supplemental groups
