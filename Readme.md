@@ -116,7 +116,7 @@ as `args` in your `docker-compose.override.yml` and run `docker-compose build`.
 ## To run with docker-compose
 
 ```bash
-git clone https://github.com/LizenzFass78851/ubuntu-xrdp.git
+git clone https://github.com/LizenzFass78851/ubuntu-xrdp.git --depth 1
 cd ubuntu-xrdp/
 nano docker-compose.yml # if you want to override any default value
 docker-compose up -d
