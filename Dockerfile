@@ -4,7 +4,7 @@ MAINTAINER Daniel Guerra
 # Install packages
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN sed -i "s/# deb-src/deb-src/g" /etc/apt/sources.list
+RUN echo "deb-src https://old-releases.ubuntu.com/ubuntu ${$UBUNTU_CODENAME} main universe" >> /etc/apt/sources.list
 RUN apt-get -y update && apt-get -yy dist-upgrade
 ENV BUILD_DEPS="git autoconf pkg-config libssl-dev libpam0g-dev \
     libx11-dev libxfixes-dev libxrandr-dev nasm xsltproc flex \
