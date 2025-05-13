@@ -4,8 +4,7 @@ MAINTAINER Daniel Guerra
 # Install packages
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN cp /etc/apt/sources.list.d/ubuntu.sources /etc/apt/sources.list.d/ubuntu-src.sources && \
-  sed -i "s/deb/deb-src/g" /etc/apt/sources.list.d/ubuntu-src.sources
+RUN echo "deb-src http://old-releases.ubuntu.com/ubuntu groovy main universe" >> /etc/apt/sources.list.d/ubuntu_souces.list
 RUN apt-get -y update && apt-get -yy dist-upgrade
 ENV BUILD_DEPS="git autoconf pkg-config libssl-dev libpam0g-dev \
     libx11-dev libxfixes-dev libxrandr-dev nasm xsltproc flex \
