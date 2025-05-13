@@ -8,21 +8,18 @@ RUN sed -i "s/# deb-src/deb-src/g" /etc/apt/sources.list
 RUN apt-get -y update && apt-get -yy dist-upgrade
 ENV BUILD_DEPS="git autoconf pkg-config libssl-dev libpam0g-dev \
     libx11-dev libxfixes-dev libxrandr-dev nasm xsltproc flex \
-    bison libxml2-dev dpkg-dev libcap-dev libxkbfile-dev \
-    python3 ninja-build meson \
-    libdbus-1-dev libglib2.0-dev libsndfile1-dev \
-    libltdl-dev"
-RUN apt-get -yy install sudo apt-utils software-properties-common $BUILD_DEPS
+    bison libxml2-dev dpkg-dev libcap-dev libxkbfile-dev"
+RUN apt-get -yy install  sudo apt-utils software-properties-common $BUILD_DEPS
 
-# Build pulseaudio from source (Debian salsa repo)
-WORKDIR /tmp
-RUN git clone https://salsa.debian.org/pulseaudio-team/pulseaudio.git pulseaudio
-WORKDIR /tmp/pulseaudio
-RUN meson build
-RUN meson compile -C build
-RUN build/src/daemon/pulseaudio -n -F build/src/daemon/default.pa -p $(pwd)/build/src/modules/
 
 # Build xrdp
+
+WORKDIR /tmp
+RUN apt-get source pulseaudio
+RUN apt-get build-dep -yy pulseaudio
+RUN mv /tmp/pulseaudio-* /tmp/pulseaudio-11.1
+WORKDIR /tmp/pulseaudio-11.1
+RUN dpkg-buildpackage -rfakeroot -uc -b
 WORKDIR /tmp
 RUN git clone --branch v0.10.0 --recursive https://github.com/neutrinolabs/xrdp.git
 WORKDIR /tmp/xrdp
@@ -31,10 +28,10 @@ RUN ./configure
 RUN make
 RUN make install
 WORKDIR /tmp
-RUN apt -yy install libpulse-dev
+RUN  apt -yy install libpulse-dev
 RUN git clone --recursive https://github.com/neutrinolabs/pulseaudio-module-xrdp.git
 WORKDIR /tmp/pulseaudio-module-xrdp
-RUN ./bootstrap && ./configure PULSE_DIR=/tmp/pulseaudio
+RUN ./bootstrap && ./configure PULSE_DIR=/tmp/pulseaudio-11.1
 RUN make
 RUN mkdir -p /tmp/so
 RUN cp src/.libs/*.so /tmp/so
