@@ -4,7 +4,7 @@ MAINTAINER Daniel Guerra
 # Install packages
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN echo "deb-src http://old-releases.ubuntu.com/ubuntu impish main universe" >> /etc/apt/sources.list.d/ubuntu-src.list
+RUN echo "deb-src http://old-releases.ubuntu.com/ubuntu mantic main universe" >> /etc/apt/sources.list.d/ubuntu-src.list
 RUN apt-get -y update && apt-get -yy dist-upgrade
 ENV BUILD_DEPS="git autoconf pkg-config libssl-dev libpam0g-dev \
     libx11-dev libxfixes-dev libxrandr-dev nasm xsltproc flex \
