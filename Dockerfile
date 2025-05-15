@@ -1,9 +1,9 @@
 FROM ubuntu:20.04 AS builder
-ENV DEBIAN_FRONTEND=noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Install packages
 
-ENV DEBIAN_FRONTEND
+ARG DEBIAN_FRONTEND
 RUN sed -i "s/# deb-src/deb-src/g" /etc/apt/sources.list
 RUN apt-get -y update && apt-get -yy dist-upgrade
 ENV BUILD_DEPS="git autoconf pkg-config libssl-dev libpam0g-dev \
@@ -38,7 +38,8 @@ FROM ubuntu:20.04
 ARG ADDITIONAL_PACKAGES=""
 ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
 ENV TZ="Etc/UTC"
-ENV DEBIAN_FRONTEND
+ARG DEBIAN_FRONTEND
+ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND}
 RUN apt update && apt install -y software-properties-common apt-utils
 RUN apt -y dist-upgrade && apt install -y \
   ca-certificates \
