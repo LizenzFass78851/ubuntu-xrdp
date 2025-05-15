@@ -1,47 +1,45 @@
+ARG DEBIAN_FRONTEND=noninteractive
 FROM ubuntu:20.04 AS builder
-MAINTAINER Daniel Guerra
 
 # Install packages
 
-ENV DEBIAN_FRONTEND=noninteractive
+ARG DEBIAN_FRONTEND
 RUN sed -i "s/# deb-src/deb-src/g" /etc/apt/sources.list
 RUN apt-get -y update && apt-get -yy dist-upgrade
 ENV BUILD_DEPS="git autoconf pkg-config libssl-dev libpam0g-dev \
     libx11-dev libxfixes-dev libxrandr-dev nasm xsltproc flex \
     bison libxml2-dev dpkg-dev libcap-dev libxkbfile-dev"
-RUN apt-get -yy install  sudo apt-utils software-properties-common $BUILD_DEPS
+RUN apt-get -yy install sudo apt-utils software-properties-common $BUILD_DEPS
 
 
 # Build xrdp
 
 WORKDIR /tmp
-RUN apt-get source pulseaudio
-RUN apt-get build-dep -yy pulseaudio
-RUN mv /tmp/pulseaudio-* /tmp/pulseaudio-11.1
+RUN apt-get source pulseaudio && \
+  apt-get build-dep -yy pulseaudio && \
+  mv /tmp/pulseaudio-* /tmp/pulseaudio-11.1
 WORKDIR /tmp/pulseaudio-11.1
 RUN dpkg-buildpackage -rfakeroot -uc -b
 WORKDIR /tmp
-RUN git clone --branch v0.10.0 --recursive https://github.com/neutrinolabs/xrdp.git
+ADD https://github.com/neutrinolabs/xrdp.git#v0.10 xrdp
 WORKDIR /tmp/xrdp
-RUN ./bootstrap
-RUN ./configure
-RUN make
-RUN make install
+RUN ./bootstrap && ./configure
+RUN make && make install
 WORKDIR /tmp
-RUN  apt -yy install libpulse-dev
-RUN git clone --recursive https://github.com/neutrinolabs/pulseaudio-module-xrdp.git
+RUN apt-get -yy install libpulse-dev
+ADD https://github.com/neutrinolabs/pulseaudio-module-xrdp.git pulseaudio-module-xrdp
 WORKDIR /tmp/pulseaudio-module-xrdp
 RUN ./bootstrap && ./configure PULSE_DIR=/tmp/pulseaudio-11.1
 RUN make
-RUN mkdir -p /tmp/so
-RUN cp src/.libs/*.so /tmp/so
+RUN mkdir -p /tmp/so && cp src/.libs/*.so /tmp/so
 
 FROM ubuntu:20.04
 
 ARG ADDITIONAL_PACKAGES=""
 ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
 ENV TZ="Etc/UTC"
-ENV DEBIAN_FRONTEND=noninteractive
+ARG DEBIAN_FRONTEND
+ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND}
 RUN apt update && apt install -y software-properties-common apt-utils
 RUN apt -y dist-upgrade && apt install -y \
   ca-certificates \
