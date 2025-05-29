@@ -5,6 +5,7 @@ FROM ubuntu:20.04 AS builder
 
 ARG DEBIAN_FRONTEND
 RUN sed -i "s/# deb-src/deb-src/g" /etc/apt/sources.list
+RUN sed -E -i 's#http://[^[:space:]]*ubuntu\.com/ubuntu#http://mirrors.edge.kernel.org/ubuntu#g' /etc/apt/sources.list
 RUN apt-get -y update && apt-get -yy dist-upgrade
 ENV BUILD_DEPS="git autoconf pkg-config libssl-dev libpam0g-dev \
     libx11-dev libxfixes-dev libxrandr-dev nasm xsltproc flex \
@@ -40,6 +41,7 @@ ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
 ENV TZ="Etc/UTC"
 ARG DEBIAN_FRONTEND
 ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND}
+RUN sed -E -i 's#http://[^[:space:]]*ubuntu\.com/ubuntu#http://mirrors.edge.kernel.org/ubuntu#g' /etc/apt/sources.list
 RUN apt update && apt install -y software-properties-common apt-utils
 RUN apt -y dist-upgrade && apt install -y \
   ca-certificates \
