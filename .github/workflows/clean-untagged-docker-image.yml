@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: purge packages
-        uses: unisg-ics-dsnlp/delete-untagged-containers@v1.4.2
+        uses: unisg-ics-dsnlp/delete-untagged-containers@v1.4.3
         with:
           package_name: ${{ github.event.repository.name }} 
           token: ${{ github.token }}
