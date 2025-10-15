@@ -18,6 +18,12 @@ jobs:
       packages: write
 
     steps:
+      - uses: mathio/gha-cleanup@v1
+        if: ${{ github.ref_name == 'kali-default' }}
+        with:
+          remove-browsers: true
+          verbose: true
+
       - name: Checkout Dockerfile
         id: checkout
         uses: actions/checkout@v5
