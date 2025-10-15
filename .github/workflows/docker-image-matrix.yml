@@ -89,6 +89,11 @@ jobs:
       TARGET_BRANCH: refs/heads/${{ matrix.target }}
 
     steps:
+      - uses: mathio/gha-cleanup@v1
+        with:
+          remove-browsers: true
+          verbose: true
+
       - name: Checkout Dockerfile
         id: checkout
         uses: actions/checkout@v5
