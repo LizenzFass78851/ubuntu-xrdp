@@ -1,7 +1,9 @@
 version: '3.5'
 services:
   terminalserver:
-    #build: ./
+    build: 
+      context: ./src
+      dockerfile: Dockerfile
     image: ghcr.io/lizenzfass78851/ubuntu-xrdp:latest
     container_name: uxrdp
     hostname: terminalserver
@@ -16,7 +18,7 @@ services:
     volumes:
       - ssh:/etc/ssh/
       - home:/home/
-#      - ./users.list:/etc/users.list
+#      - ./src/users.list:/etc/users.list
 
 volumes:
   ssh:
