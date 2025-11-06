@@ -2,7 +2,7 @@ name: Docker Image CI (Test Build)
 
 on:
   pull_request:
-    branches: [ "20.04*", "22.04*", "24.04*", "kali-*" ]
+    branches: [ "main" ]
 
 env:
   IMAGE_NAME: ${{ github.event.pull_request.base.repo.name }}
@@ -11,19 +11,45 @@ env:
 jobs:
 
   build:
-
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - dockerfile: Dockerfile.20.04.ubuntu
+            context: src
+            target: 20.04
+          - dockerfile: Dockerfile.22.04.ubuntu
+            context: src
+            target: 22.04
+          - dockerfile: Dockerfile.24.04.ubuntu
+            context: src
+            target: 24.04
+          - dockerfile: Dockerfile.light.rolling.kali
+            context: src
+            target: kali-light
+          - dockerfile: Dockerfile.default.rolling.kali
+            context: src
+            target: kali-default
 
     steps:
-    - uses: mathio/gha-cleanup@v1
-      with:
-        remove-browsers: true
-        verbose: true
+      - id: checkup
+        if: ${{ contains(github.event.pull_request.changed_files, matrix.dockerfile) }}
+        run: |
+          echo "run=true" >> $GITHUB_OUTPUT
 
-    - uses: actions/checkout@v5
-    - name: Build the Docker image
-      run: |
-        docker \
-        build . \
-        --file Dockerfile \
-        --tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+      - uses: mathio/gha-cleanup@v1
+        if: ${{ steps.checkup.outputs.run == 'true' && matrix.target == 'kali-default' }}
+        with:
+          remove-browsers: true
+          verbose: true
+
+      - uses: actions/checkout@v5
+
+      - name: Build the Docker image
+        if: steps.checkup.outputs.run == 'true'
+        run: |
+          cd ${{ matrix.context }} && \
+          docker build . \
+          --file ${{ matrix.dockerfile }} \
+          --tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}-${{ matrix.target }}

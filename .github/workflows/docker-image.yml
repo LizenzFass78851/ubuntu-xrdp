@@ -2,8 +2,7 @@ name: Build and Publish Docker Image
 
 on:
   push:
-    branches: [ "20.04*", "22.04*", "24.04*", "kali-*" ]
-  workflow_dispatch:
+    branches: [ "main" ]
 
 env:
   REGISTRY: ghcr.io
@@ -13,22 +12,52 @@ env:
 jobs:
   build_amd64:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - dockerfile: Dockerfile.20.04.ubuntu
+            context: src
+            target: 20.04
+            latest: false
+          - dockerfile: Dockerfile.22.04.ubuntu
+            context: src
+            target: 22.04
+            latest: false
+          - dockerfile: Dockerfile.24.04.ubuntu
+            context: src
+            target: 24.04
+            latest: true
+          - dockerfile: Dockerfile.light.rolling.kali
+            context: src
+            target: kali-light
+            latest: false
+          - dockerfile: Dockerfile.default.rolling.kali
+            context: src
+            target: kali-default
+            latest: false
     permissions:
       contents: read
       packages: write
 
     steps:
+      - id: checkup
+        run: |
+          echo "run=true" >> $GITHUB_OUTPUT
+
       - uses: mathio/gha-cleanup@v1
-        if: ${{ github.ref_name == 'kali-default' }}
+        if: ${{ steps.checkup.outputs.run == 'true' && matrix.target == 'kali-default' }}
         with:
           remove-browsers: true
           verbose: true
 
       - name: Checkout Dockerfile
+        if: steps.checkup.outputs.run == 'true'
         id: checkout
         uses: actions/checkout@v5
 
       - name: Setup QEMU
+        if: steps.checkup.outputs.run == 'true'
         id: qemu
         uses: docker/setup-qemu-action@v3
         with:
@@ -36,10 +65,12 @@ jobs:
           platforms: all
       
       - name: Setup Docker Buildx
+        if: steps.checkup.outputs.run == 'true'
         id: buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
+        if: steps.checkup.outputs.run == 'true'
         id: ghcr
         uses: docker/login-action@v3
         with:
@@ -48,20 +79,22 @@ jobs:
           password: ${{ github.token }}
 
       - name: Extract metadata (tags, labels) for Docker
+        if: steps.checkup.outputs.run == 'true'
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
-            latest=${{ startsWith(github.ref, 'refs/heads/24.04') }}
+            latest=${{ matrix.latest }}
 
       - name: Build and push main Docker image
+        if: steps.checkup.outputs.run == 'true'
         id: build
         uses: docker/build-push-action@v6
         with:
           build-args: GH_TOKEN=${{ github.token }}
-          context: .
-          file: ./Dockerfile
+          context: ${{ matrix.context }}
+          file: ${{ matrix.context }}/${{ matrix.dockerfile }}
           platforms: linux/amd64
           cache-to: type=gha,mode=max,ignore-error=true
           cache-from: type=gha
