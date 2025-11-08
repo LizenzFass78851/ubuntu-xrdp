@@ -3,6 +3,8 @@ name: Build as Matrix and Publish Docker Image
 on:
   schedule:
     - cron: '20 14 * * 2'
+  push:
+    branches: [ "main" ]
   workflow_dispatch:
 
 env:
