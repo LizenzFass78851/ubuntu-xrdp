@@ -94,7 +94,8 @@ RUN cp /etc/X11/xrdp/xorg.conf /etc/X11 && \
   cp -r /etc/ssh /ssh_orig && \
   rm -rf /etc/ssh/* && \
   rm -rf /etc/xrdp/rsakeys.ini /etc/xrdp/*.pem && \
-  ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+  ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
+  chmod +x /usr/bin/docker-entrypoint.sh
 
 # Docker config
 VOLUME ["/etc/ssh","/home"]
