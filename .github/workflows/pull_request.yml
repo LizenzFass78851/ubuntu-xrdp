@@ -25,6 +25,9 @@ jobs:
           - dockerfile: Dockerfile.24.04.ubuntu
             context: src
             target: 24.04
+          - dockerfile: Dockerfile.26.04.ubuntu
+            context: src
+            target: 26.04
           - dockerfile: Dockerfile.light.rolling.kali
             context: src
             target: kali-light

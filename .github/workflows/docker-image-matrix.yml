@@ -30,6 +30,10 @@ jobs:
             context: src
             target: 24.04
             latest: true
+          - dockerfile: Dockerfile.26.04.ubuntu
+            context: src
+            target: 26.04
+            latest: false
           - dockerfile: Dockerfile.light.rolling.kali
             context: src
             target: kali-light

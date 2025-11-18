@@ -2,7 +2,7 @@
 
 Fully implemented Multi User xrdp
 with xorgxrdp and pulseaudio
-on Ubuntu from 20.04 to 24.04
+on Ubuntu from 20.04 to 26.04
 Copy/Paste and sound is working.
 Users can re-login in the same session.
 Xfce4, Firefox are pre installed.
@@ -16,6 +16,7 @@ Xfce4, Firefox are pre installed.
 | ghcr.io/lizenzfass78851/ubuntu-xrdp | 20.04 |  |
 | ghcr.io/lizenzfass78851/ubuntu-xrdp | 22.04 |  |
 | ghcr.io/lizenzfass78851/ubuntu-xrdp | 24.04 | 📌 |
+| ghcr.io/lizenzfass78851/ubuntu-xrdp | 26.04 |  |
 | ghcr.io/lizenzfass78851/ubuntu-xrdp | kali-light |  |
 | ghcr.io/lizenzfass78851/ubuntu-xrdp | kali-default |  |
 
