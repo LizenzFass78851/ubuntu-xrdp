@@ -8,6 +8,7 @@ RUN sed -E -i 's#http://[^[:space:]]*ubuntu\.com/ubuntu#http://mirrors.edge.kern
 RUN cp /etc/apt/sources.list.d/ubuntu.sources /etc/apt/sources.list.d/ubuntu-src.sources && \
   sed -i "s/deb/deb-src/g" /etc/apt/sources.list.d/ubuntu-src.sources
 RUN apt-get -y update && apt-get -yy dist-upgrade
+RUN ls --version | grep -q uutils && apt-get remove -y --allow-remove-essential coreutils-from-uutils
 ENV BUILD_DEPS="git autoconf pkg-config libssl-dev libpam0g-dev \
     libx11-dev libxfixes-dev libxrandr-dev nasm xsltproc flex \
     bison libxml2-dev dpkg-dev libcap-dev libxkbfile-dev"
@@ -44,6 +45,7 @@ ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND}
 RUN sed -E -i 's#http://[^[:space:]]*ubuntu\.com/ubuntu#http://mirrors.edge.kernel.org/ubuntu#g' /etc/apt/sources.list.d/ubuntu.sources
 RUN apt update && apt install -y software-properties-common apt-utils
 RUN echo -e '#!/bin/sh\nexit 1' | tee /usr/sbin/telinit
+RUN ls --version | grep -q uutils && apt-get remove -y --allow-remove-essential coreutils-from-uutils
 RUN apt -y dist-upgrade && apt install -y \
   ca-certificates \
   crudini \
