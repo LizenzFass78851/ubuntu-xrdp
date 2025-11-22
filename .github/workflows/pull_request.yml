@@ -9,50 +9,74 @@ env:
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
+  detect:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            docker_20_04:
+              - 'src/Dockerfile.20.04.ubuntu'
+            docker_22_04:
+              - 'src/Dockerfile.22.04.ubuntu'
+            docker_24_04:
+              - 'src/Dockerfile.24.04.ubuntu'
+            docker_26_04:
+              - 'src/Dockerfile.26.04.ubuntu'
+            kali_light:
+              - 'src/Dockerfile.light.rolling.kali'
+            kali_default:
+              - 'src/Dockerfile.default.rolling.kali'
+
+    outputs:
+      docker_20_04: ${{ steps.filter.outputs.docker_20_04 }}
+      docker_22_04: ${{ steps.filter.outputs.docker_22_04 }}
+      docker_24_04: ${{ steps.filter.outputs.docker_24_04 }}
+      docker_26_04: ${{ steps.filter.outputs.docker_26_04 }}
+      kali_light: ${{ steps.filter.outputs.kali_light }}
+      kali_default: ${{ steps.filter.outputs.kali_default }}
 
   build:
+    needs: detect
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          - dockerfile: Dockerfile.20.04.ubuntu
-            context: src
-            target: 20.04
-          - dockerfile: Dockerfile.22.04.ubuntu
-            context: src
-            target: 22.04
-          - dockerfile: Dockerfile.24.04.ubuntu
-            context: src
-            target: 24.04
-          - dockerfile: Dockerfile.26.04.ubuntu
-            context: src
-            target: 26.04
-          - dockerfile: Dockerfile.light.rolling.kali
-            context: src
-            target: kali-light
-          - dockerfile: Dockerfile.default.rolling.kali
-            context: src
-            target: kali-default
-
+          - name: "20.04"
+            dockerfile: Dockerfile.20.04.ubuntu
+            enabled: ${{ needs.detect.outputs.docker_20_04 == 'true' }}
+          - name: "22.04"
+            dockerfile: Dockerfile.22.04.ubuntu
+            enabled: ${{ needs.detect.outputs.docker_22_04 == 'true' }}
+          - name: "24.04"
+            dockerfile: Dockerfile.24.04.ubuntu
+            enabled: ${{ needs.detect.outputs.docker_24_04 == 'true' }}
+          - name: "26.04"
+            dockerfile: Dockerfile.26.04.ubuntu
+            enabled: ${{ needs.detect.outputs.docker_26_04 == 'true' }}
+          - name: "kali_light"
+            dockerfile: Dockerfile.light.rolling.kali
+            enabled: ${{ needs.detect.outputs.kali_light == 'true' }}
+          - name: "kali_default"
+            dockerfile: Dockerfile.default.rolling.kali
+            enabled: ${{ needs.detect.outputs.kali_default == 'true' }}
     steps:
-      - id: checkup
-        if: ${{ contains(github.event.pull_request.changed_files, matrix.dockerfile) }}
-        run: |
-          echo "run=true" >> $GITHUB_OUTPUT
-
       - uses: mathio/gha-cleanup@v1
-        if: ${{ steps.checkup.outputs.run == 'true' && matrix.target == 'kali-default' }}
+        if: ${{ matrix.enabled && matrix.name == 'kali_default' }}  # here use Boolean
         with:
           remove-browsers: true
           verbose: true
-
       - uses: actions/checkout@v6
-
+        if: ${{ matrix.enabled }}  # here use Boolean
       - name: Build the Docker image
-        if: steps.checkup.outputs.run == 'true'
+        if: ${{ matrix.enabled }}  # here use Boolean
         run: |
-          cd ${{ matrix.context }} && \
+          cd src
           docker build . \
           --file ${{ matrix.dockerfile }} \
-          --tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}-${{ matrix.target }}
+          --tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}-${{ matrix.name }}
