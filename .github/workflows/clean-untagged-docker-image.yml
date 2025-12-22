@@ -1,14 +1,25 @@
-name: Clean untagged Docker Image
+name: Remove untagged images from registry
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "0 1 * * *"
 
 jobs:
-  remove-package-versions:
+  remove_untagged_images:
     runs-on: ubuntu-latest
+    if: ${{ (github.event_name == 'schedule' && github.repository_owner != 'LizenzFass78851') || github.event_name != 'schedule'  }}
+    permissions:
+      packages: write
+      contents: read
     steps:
-      - name: purge packages
-        uses: unisg-ics-dsnlp/delete-untagged-containers@main
+      - name: Delete all containers from package without tags
+        uses: Chizkiyahu/delete-untagged-ghcr-action@main
         with:
-          package_name: ${{ github.event.repository.name }} 
           token: ${{ github.token }}
+          repository_owner: ${{ github.repository_owner }}
+          repository: ${{ github.repository }}
+          package_name: ${{ github.event.repository.name }}
+          untagged_only: true
+          owner_type: user # or org
+          except_untagged_multiplatform: true
