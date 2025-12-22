@@ -11,6 +11,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   IMAGE_TAG: ${{ github.sha }}
+  CONTAINER_NAME: test
   
 concurrency:
   group: ${{ github.workflow }}
@@ -87,6 +88,46 @@ jobs:
             latest=${{ matrix.latest }}
           tags: ${{ matrix.target }}
 
+      - &prebuild
+        name: Build main Docker image
+        id: prebuild
+        uses: docker/build-push-action@v6
+        with:
+          build-args: GH_TOKEN=${{ github.token }}
+          context: ${{ matrix.context }}
+          file: ${{ matrix.context }}/${{ matrix.dockerfile }}
+          cache-to: type=gha,mode=max,ignore-error=true
+          cache-from: type=gha
+          push: false
+          load: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - &test-start
+        name: test - start
+        run: |
+          sudo docker run -t -d \
+          --name ${{ env.CONTAINER_NAME }} \
+          $(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+      - &test-check-logs
+        name: test - check logs
+        uses: crazy-max/.github/.github/actions/container-logs-check@main
+        with:
+          container_name: ${{ env.CONTAINER_NAME }}
+          log_check: "INFO success"
+          timeout: 120
+      - &test-show-logs
+        name: test - show logs
+        if: always()
+        run: |
+          sudo docker logs ${{ env.CONTAINER_NAME }} || true
+      - &test-stop-and-remove
+        name: test - stop and remove
+        if: always()
+        run: |
+          sudo docker stop -t 10 ${{ env.CONTAINER_NAME }} || sudo docker stop -s SIGKILL -t 10 ${{ env.CONTAINER_NAME }} || true
+          sudo docker rm -f ${{ env.CONTAINER_NAME }}
+
       - &build
         name: Build and push main Docker image
         id: build
@@ -129,4 +170,9 @@ jobs:
       - *buildx
       - *ghcr
       - *meta
+      - *prebuild
+      - *test-start
+      - *test-check-logs
+      - *test-show-logs
+      - *test-stop-and-remove
       - *build
