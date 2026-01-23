@@ -18,7 +18,7 @@ services:
     volumes:
       - ssh:/etc/ssh/
       - home:/home/
-#      - ./src/users.list:/etc/users.list
+      - ./src/users.list:/etc/users.list
 
 volumes:
   ssh:

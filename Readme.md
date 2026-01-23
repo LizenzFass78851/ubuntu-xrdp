@@ -49,8 +49,11 @@ id username password-hash list-of-supplemental-groups
 
 The provided users.list file will create a sample user with sudo rights
 
-Username: ubuntu
-Password: ubuntu
+Username: admin
+Password: admin
+
+> [!CAUTION]
+> Change this password or delete this profile from users.list before starting this container
 
 To generate the password hash use the following line
 
