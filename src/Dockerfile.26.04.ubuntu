@@ -24,7 +24,7 @@ RUN apt-get source pulseaudio && \
 WORKDIR /tmp/pulseaudio-11.1
 RUN dpkg-buildpackage -rfakeroot -uc -b
 WORKDIR /tmp
-ADD https://github.com/neutrinolabs/xrdp.git#v0.10.4.1 xrdp
+ADD https://github.com/neutrinolabs/xrdp.git#v0.10.5 xrdp
 WORKDIR /tmp/xrdp
 RUN ./bootstrap && ./configure
 RUN make && make install
