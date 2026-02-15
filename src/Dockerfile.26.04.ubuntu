@@ -2,6 +2,13 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 FROM ubuntu:26.04 AS main
 
+WORKDIR /etc/apt/mirrors
+RUN cat > /etc/apt/mirrors/ubuntu.list <<EOF
+http://mirrors.edge.kernel.org/ubuntu
+http://archive.ubuntu.com/ubuntu
+EOF
+RUN sed -E -i 's#http://[^[:space:]]*ubuntu\.com/ubuntu#mirror+file:///etc/apt/mirrors/ubuntu.list#g' /etc/apt/sources.list.d/ubuntu.sources
+
 # --------------------------------------------------------------------------------
 
 FROM main AS builder
@@ -9,7 +16,6 @@ FROM main AS builder
 # Install packages
 
 ARG DEBIAN_FRONTEND
-RUN sed -E -i 's#http://[^[:space:]]*ubuntu\.com/ubuntu#http://mirrors.edge.kernel.org/ubuntu#g' /etc/apt/sources.list.d/ubuntu.sources
 RUN cp /etc/apt/sources.list.d/ubuntu.sources /etc/apt/sources.list.d/ubuntu-src.sources && \
   sed -i "s/deb/deb-src/g" /etc/apt/sources.list.d/ubuntu-src.sources
 RUN apt-get -y update && apt-get -yy dist-upgrade
@@ -50,7 +56,6 @@ ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
 ENV TZ="Etc/UTC"
 ARG DEBIAN_FRONTEND
 ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND}
-RUN sed -E -i 's#http://[^[:space:]]*ubuntu\.com/ubuntu#http://mirrors.edge.kernel.org/ubuntu#g' /etc/apt/sources.list.d/ubuntu.sources
 RUN apt update && apt install -y software-properties-common apt-utils
 RUN echo -e '#!/bin/sh\nexit 1' | tee /usr/sbin/telinit
 RUN ls --version | grep -q uutils && apt-get remove -y --allow-remove-essential coreutils-from-uutils
