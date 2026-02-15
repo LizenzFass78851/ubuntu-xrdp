@@ -12,13 +12,17 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   IMAGE_TAG: ${{ github.sha }}
   CONTAINER_NAME: test
-  
+
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
-  build_amd64_1:
+  build_ubuntu:
     strategy:
       fail-fast: false
       matrix:
@@ -39,16 +43,7 @@ jobs:
             context: src
             target: 26.04
             latest: false
-          - dockerfile: Dockerfile.light.rolling.kali
-            context: src
-            target: kali-light
-            latest: false
-    outputs:
-      kali-light-success: ${{ steps.build.outcome == 'success' && matrix.target == 'kali-light' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
 
     steps:
       - &checkout
@@ -143,9 +138,35 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  build_amd64_2:
-    needs: build_amd64_1
-    if: ${{ needs.build_amd64_1.outputs.kali-light-success }}
+  build_kali_light:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - dockerfile: Dockerfile.light.rolling.kali
+            context: src
+            target: kali-light
+            latest: false
+    outputs:
+      kali-light-success: ${{ steps.build.outcome == 'success' && matrix.target == 'kali-light' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - *checkout
+      - *qemu
+      - *buildx
+      - *ghcr
+      - *meta
+      - *prebuild
+      - *test-start
+      - *test-check-logs
+      - *test-show-logs
+      - *test-stop-and-remove
+      - *build
+
+  build_kali_default:
+    needs: build_kali_light
+    if: ${{ needs.build_kali_light.outputs.kali-light-success }}
     strategy:
       fail-fast: false
       matrix:
@@ -155,9 +176,6 @@ jobs:
             target: kali-default
             latest: false
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
 
     steps:
       - uses: mathio/gha-cleanup@v1
