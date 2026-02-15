@@ -1,5 +1,10 @@
 ARG DEBIAN_FRONTEND=noninteractive
-FROM ubuntu:24.04 AS builder
+
+FROM ubuntu:24.04 AS main
+
+# --------------------------------------------------------------------------------
+
+FROM main AS builder
 
 # Install packages
 
@@ -35,7 +40,10 @@ RUN ./bootstrap && ./configure PULSE_DIR=/tmp/pulseaudio-11.1
 RUN make
 RUN mkdir -p /tmp/so && cp src/.libs/*.so /tmp/so
 
-FROM ubuntu:24.04
+# --------------------------------------------------------------------------------
+
+FROM main
+
 ARG ADDITIONAL_PACKAGES=""
 ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
 ENV TZ="Etc/UTC"
