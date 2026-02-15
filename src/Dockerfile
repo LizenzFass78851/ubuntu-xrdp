@@ -1,1 +1,1 @@
-Dockerfile.24.04.ubuntu
+Dockerfile.ubuntu

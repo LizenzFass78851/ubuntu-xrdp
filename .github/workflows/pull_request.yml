@@ -19,24 +19,15 @@ jobs:
         id: filter
         with:
           filters: |
-            docker_20_04:
-              - 'src/Dockerfile.20.04.ubuntu'
-            docker_22_04:
-              - 'src/Dockerfile.22.04.ubuntu'
-            docker_24_04:
-              - 'src/Dockerfile.24.04.ubuntu'
-            docker_26_04:
-              - 'src/Dockerfile.26.04.ubuntu'
+            ubuntu:
+              - 'src/Dockerfile.ubuntu'
             kali_light:
               - 'src/Dockerfile.light.rolling.kali'
             kali_default:
               - 'src/Dockerfile.default.rolling.kali'
 
     outputs:
-      docker_20_04: ${{ steps.filter.outputs.docker_20_04 }}
-      docker_22_04: ${{ steps.filter.outputs.docker_22_04 }}
-      docker_24_04: ${{ steps.filter.outputs.docker_24_04 }}
-      docker_26_04: ${{ steps.filter.outputs.docker_26_04 }}
+      ubuntu: ${{ steps.filter.outputs.ubuntu }}
       kali_light: ${{ steps.filter.outputs.kali_light }}
       kali_default: ${{ steps.filter.outputs.kali_default }}
 
@@ -48,17 +39,17 @@ jobs:
       matrix:
         include:
           - name: "20.04"
-            dockerfile: Dockerfile.20.04.ubuntu
-            enabled: ${{ needs.detect.outputs.docker_20_04 == 'true' }}
+            dockerfile: Dockerfile.ubuntu
+            enabled: ${{ needs.detect.outputs.ubuntu == 'true' }}
           - name: "22.04"
-            dockerfile: Dockerfile.22.04.ubuntu
-            enabled: ${{ needs.detect.outputs.docker_22_04 == 'true' }}
+            dockerfile: Dockerfile.ubuntu
+            enabled: ${{ needs.detect.outputs.ubuntu == 'true' }}
           - name: "24.04"
-            dockerfile: Dockerfile.24.04.ubuntu
-            enabled: ${{ needs.detect.outputs.docker_24_04 == 'true' }}
+            dockerfile: Dockerfile.ubuntu
+            enabled: ${{ needs.detect.outputs.ubuntu == 'true' }}
           - name: "26.04"
-            dockerfile: Dockerfile.26.04.ubuntu
-            enabled: ${{ needs.detect.outputs.docker_26_04 == 'true' }}
+            dockerfile: Dockerfile.ubuntu
+            enabled: ${{ needs.detect.outputs.ubuntu == 'true' }}
           - name: "kali_light"
             dockerfile: Dockerfile.light.rolling.kali
             enabled: ${{ needs.detect.outputs.kali_light == 'true' }}
@@ -80,3 +71,4 @@ jobs:
           docker build . \
           --file ${{ matrix.dockerfile }} \
           --tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}-${{ matrix.name }}
+          --build-arg UBUNTU_VERSION=${{ matrix.name }}

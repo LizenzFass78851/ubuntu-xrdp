@@ -1,13 +1,21 @@
+ARG UBUNTU_VERSION=latest
 ARG DEBIAN_FRONTEND=noninteractive
 
-FROM ubuntu:20.04 AS main
+FROM ubuntu:$UBUNTU_VERSION AS main
 
+ARG DEBIAN_FRONTEND
 WORKDIR /etc/apt/mirrors
 RUN cat > /etc/apt/mirrors/ubuntu.list <<EOF
 http://mirrors.edge.kernel.org/ubuntu
 http://archive.ubuntu.com/ubuntu
 EOF
-RUN sed -E -i 's#http://[^[:space:]]*ubuntu\.com/ubuntu#mirror+file:///etc/apt/mirrors/ubuntu.list#g' /etc/apt/sources.list
+RUN for a in $(find /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources); do \
+      sed -E -i 's#http://[^[:space:]]*ubuntu\.com/ubuntu#mirror+file:///etc/apt/mirrors/ubuntu.list#g' $a \
+      || echo "Failed to update $a"; \
+    done || echo "No files were updated. Please check the sources list files."
+RUN (ls --version | grep -q uutils && (apt-get remove -y --allow-remove-essential coreutils-from-uutils && \ 
+    rm -rf /var/cache/apt /var/lib/apt/lists)) \
+    || (echo "uutils coreutils not found, skipping removal." && true)
 
 # --------------------------------------------------------------------------------
 
@@ -16,13 +24,20 @@ FROM main AS builder
 # Install packages
 
 ARG DEBIAN_FRONTEND
-RUN sed -i "s/# deb-src/deb-src/g" /etc/apt/sources.list
+RUN for a in $(find /etc/apt/sources.list); do \
+      (sed -i "s/# deb-src/deb-src/g" $a) \
+      || echo "Failed to update $a"; \
+    done; \
+    for a in $(find /etc/apt/sources.list.d/ubuntu.sources); do \
+      (cp $a ${a}.src.sources && \
+      sed -i "s/deb/deb-src/g" ${a}.src.sources) \
+      || echo "Failed to update $a"; \
+    done
 RUN apt-get -y update && apt-get -yy dist-upgrade
 ENV BUILD_DEPS="git autoconf pkg-config libssl-dev libpam0g-dev \
     libx11-dev libxfixes-dev libxrandr-dev nasm xsltproc flex \
     bison libxml2-dev dpkg-dev libcap-dev libxkbfile-dev"
 RUN apt-get -yy install sudo apt-utils software-properties-common $BUILD_DEPS
-
 
 # Build xrdp
 
@@ -55,10 +70,10 @@ ENV TZ="Etc/UTC"
 ARG DEBIAN_FRONTEND
 ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND}
 RUN apt update && apt install -y software-properties-common apt-utils
+RUN echo -e '#!/bin/sh\nexit 1' | tee /usr/sbin/telinit
 RUN apt -y dist-upgrade && apt install -y \
   ca-certificates \
   crudini \
-  firefox \
   less \
   locales \
   openssh-server \
@@ -89,6 +104,14 @@ RUN apt -y dist-upgrade && apt install -y \
   apt-get autoremove -yy && \
   rm -rf /var/cache/apt /var/lib/apt/lists && \
   mkdir -p /var/lib/xrdp-pulseaudio-installer
+RUN install -d -m 0755 /etc/apt/keyrings && \
+  wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O /etc/apt/keyrings/packages.mozilla.org.asc && \
+  gpg -n -q --import --import-options import-show /etc/apt/keyrings/packages.mozilla.org.asc | awk '/pub/{getline; gsub(/^ +| +$/,""); if($0 == "35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3") print "\nThe key fingerprint matches ("$0").\n"; else print "\nVerification failed: the fingerprint ("$0") does not match the expected one.\n"}' && \
+  echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" > /etc/apt/sources.list.d/mozilla.list && \
+  printf 'Package: *\nPin: origin packages.mozilla.org\nPin-Priority: 1000\n' > /etc/apt/preferences.d/mozilla && \
+  echo 'Unattended-Upgrade::Allowed-Origins:: "packages.mozilla.org:mozilla";' > /etc/apt/apt.conf.d/51unattended-upgrades-firefox && \
+  apt-get update && apt-get install -y firefox-esr && \
+  rm -rf /var/cache/apt /var/lib/apt/lists
 COPY --from=builder /tmp/so/module-xrdp-source.so /var/lib/xrdp-pulseaudio-installer
 COPY --from=builder /tmp/so/module-xrdp-sink.so /var/lib/xrdp-pulseaudio-installer
 ADD bin /usr/bin

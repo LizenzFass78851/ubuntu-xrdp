@@ -27,19 +27,19 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - dockerfile: Dockerfile.20.04.ubuntu
+          - dockerfile: Dockerfile.ubuntu
             context: src
             target: 20.04
             latest: false
-          - dockerfile: Dockerfile.22.04.ubuntu
+          - dockerfile: Dockerfile.ubuntu
             context: src
             target: 22.04
             latest: false
-          - dockerfile: Dockerfile.24.04.ubuntu
+          - dockerfile: Dockerfile.ubuntu
             context: src
             target: 24.04
             latest: true
-          - dockerfile: Dockerfile.26.04.ubuntu
+          - dockerfile: Dockerfile.ubuntu
             context: src
             target: 26.04
             latest: false
@@ -88,7 +88,9 @@ jobs:
         id: prebuild
         uses: docker/build-push-action@v6
         with:
-          build-args: GH_TOKEN=${{ github.token }}
+          build-args: |
+            GH_TOKEN=${{ github.token }}
+            UBUNTU_VERSION=${{ matrix.target }}
           context: ${{ matrix.context }}
           file: ${{ matrix.context }}/${{ matrix.dockerfile }}
           cache-to: type=gha,mode=max,ignore-error=true
@@ -128,7 +130,9 @@ jobs:
         id: build
         uses: docker/build-push-action@v6
         with:
-          build-args: GH_TOKEN=${{ github.token }}
+          build-args: |
+            GH_TOKEN=${{ github.token }}
+            UBUNTU_VERSION=${{ matrix.target }}
           context: ${{ matrix.context }}
           file: ${{ matrix.context }}/${{ matrix.dockerfile }}
           platforms: linux/amd64
