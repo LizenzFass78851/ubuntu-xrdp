@@ -7,3 +7,7 @@ updates:
       interval: "weekly"
       day: saturday
       time: "09:00"
+    groups:
+      github_action-dependencies:
+        patterns:
+          - "*"
