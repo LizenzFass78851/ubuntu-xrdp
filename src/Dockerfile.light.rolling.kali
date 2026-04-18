@@ -1,3 +1,4 @@
+ARG XRDP_VERSION=v0.10.6
 ARG DEBIAN_FRONTEND=noninteractive
 
 FROM kalilinux/kali-rolling AS main
@@ -9,6 +10,7 @@ FROM main AS builder
 # Install packages
 
 ARG DEBIAN_FRONTEND
+ARG XRDP_VERSION
 ARG DEBIAN_VERSION_FOR_MIRORR="bookworm"
 RUN echo "deb-src http://http.kali.org/kali kali-rolling main non-free contrib" | tee -a /etc/apt/sources.list
 RUN echo "deb http://ftp.debian.org/debian $DEBIAN_VERSION_FOR_MIRORR main" >> /etc/apt/sources.list.d/debian-$DEBIAN_VERSION_FOR_MIRORR.list
@@ -28,7 +30,7 @@ RUN apt-get source pulseaudio && \
 WORKDIR /tmp/pulseaudio-11.1
 RUN dpkg-buildpackage -rfakeroot -uc -b
 WORKDIR /tmp
-ADD https://github.com/neutrinolabs/xrdp.git#v0.10.5 xrdp
+ADD https://github.com/neutrinolabs/xrdp.git#${XRDP_VERSION} xrdp
 WORKDIR /tmp/xrdp
 RUN ./bootstrap && ./configure
 RUN make && make install
