@@ -5,7 +5,7 @@ services:
       context: ./src
       dockerfile: Dockerfile
       args:
-        UBUNTU_VERSION: 24.04
+        UBUNTU_VERSION: 26.04
     image: ghcr.io/lizenzfass78851/ubuntu-xrdp:latest
     container_name: uxrdp
     hostname: terminalserver

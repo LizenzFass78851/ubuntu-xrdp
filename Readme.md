@@ -15,8 +15,8 @@ Xfce4, Firefox are pre installed.
 |:------------------:|:--------------:|:-----------------:|
 | ghcr.io/lizenzfass78851/ubuntu-xrdp | 20.04 |  |
 | ghcr.io/lizenzfass78851/ubuntu-xrdp | 22.04 |  |
-| ghcr.io/lizenzfass78851/ubuntu-xrdp | 24.04 | 📌 |
-| ghcr.io/lizenzfass78851/ubuntu-xrdp | 26.04 |  |
+| ghcr.io/lizenzfass78851/ubuntu-xrdp | 24.04 |  |
+| ghcr.io/lizenzfass78851/ubuntu-xrdp | 26.04 | 📌 |
 | ghcr.io/lizenzfass78851/ubuntu-xrdp | kali-light |  |
 | ghcr.io/lizenzfass78851/ubuntu-xrdp | kali-default |  |
 

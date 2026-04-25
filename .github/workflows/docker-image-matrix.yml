@@ -38,11 +38,11 @@ jobs:
           - dockerfile: Dockerfile.ubuntu
             context: src
             target: 24.04
-            latest: true
+            latest: false
           - dockerfile: Dockerfile.ubuntu
             context: src
             target: 26.04
-            latest: false
+            latest: true
     runs-on: ubuntu-latest
 
     steps:
