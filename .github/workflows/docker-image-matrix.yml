@@ -103,7 +103,7 @@ jobs:
         name: test - check logs
         uses: crazy-max/.github/.github/actions/container-logs-check@main
         with:
-          container_name: ${{ env.CONTAINER_NAME }}
+          name: ${{ env.CONTAINER_NAME }}
           log_check: "INFO success"
           timeout: 120
       - &test-show-logs
