@@ -11,7 +11,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   IMAGE_TAG: ${{ github.sha }}
-  CONTAINER_NAME: test
+  CONTAINER_NAME: test-${{ github.run_id }}
 
 concurrency:
   group: ${{ github.workflow }}
@@ -81,17 +81,17 @@ jobs:
         id: prebuild
         uses: docker/build-push-action@v7
         with:
-          build-args: |
+          build-args: &build-args |
             GH_TOKEN=${{ github.token }}
             UBUNTU_VERSION=${{ matrix.target }}
-          context: ${{ matrix.context }}
-          file: ${{ matrix.context }}/${{ matrix.dockerfile }}
-          cache-to: type=gha,mode=max,ignore-error=true
-          cache-from: type=gha
+          context: &context ${{ matrix.context }}
+          file: &file ${{ matrix.context }}/${{ matrix.dockerfile }}
+          cache-to: &cache-to type=gha,mode=max,ignore-error=true
+          cache-from: &cache-from type=gha
           push: false
           load: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: &tags ${{ steps.meta.outputs.tags }}
+          labels: &labels ${{ steps.meta.outputs.labels }}
 
       - &test-start
         name: test - start
@@ -122,18 +122,16 @@ jobs:
         name: Build and push main Docker image
         id: build
         uses: docker/build-push-action@v7
-        with:
-          build-args: |
-            GH_TOKEN=${{ github.token }}
-            UBUNTU_VERSION=${{ matrix.target }}
-          context: ${{ matrix.context }}
-          file: ${{ matrix.context }}/${{ matrix.dockerfile }}
+        with: 
+          build-args: *build-args
+          context: *context
+          file: *file
           platforms: linux/amd64
-          cache-to: type=gha,mode=max,ignore-error=true
-          cache-from: type=gha
+          cache-to: *cache-to
+          cache-from: *cache-from
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: *tags
+          labels: *labels
 
   build_kali_light:
     strategy:
