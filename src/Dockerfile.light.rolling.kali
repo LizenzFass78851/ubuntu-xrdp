@@ -11,7 +11,7 @@ FROM main AS builder
 
 ARG DEBIAN_FRONTEND
 ARG XRDP_VERSION
-RUN echo "deb-src http://http.kali.org/kali kali-last-snapshot main non-free contrib" | tee -a /etc/apt/sources.list
+RUN echo "deb-src http://http.kali.org/kali kali-rolling main non-free contrib" | tee -a /etc/apt/sources.list
 RUN sed -E -i 's#kali-rolling#kali-last-snapshot#g' /etc/apt/sources.list.d/kali.sources
 RUN echo "deb http://http.kali.org/kali kali-debian-picks main" >> /etc/apt/sources.list.d/kali-debian-picks.list
 RUN apt-get -y update && apt-get -yy dist-upgrade
