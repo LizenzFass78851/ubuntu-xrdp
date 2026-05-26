@@ -67,10 +67,12 @@ jobs:
       - name: Build the Docker image
         if: ${{ matrix.enabled }}  # here use Boolean
         uses: docker/build-push-action@v7
+        env:
+          WORKING_DIRECTORY: src
         with: 
           build-args: |
             UBUNTU_VERSION=${{ matrix.name }}
-          context: src
-          file: ${{ matrix.dockerfile }}
+          context: ${{ env.WORKING_DIRECTORY }}
+          file: ${{ env.WORKING_DIRECTORY }}/${{ matrix.dockerfile }}
           push: false
           tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}-${{ matrix.name }}
