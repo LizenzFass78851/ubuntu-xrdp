@@ -70,5 +70,5 @@ jobs:
           cd src
           docker build . \
           --file ${{ matrix.dockerfile }} \
-          --tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}-${{ matrix.name }}
+          --tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}-${{ matrix.name }} \
           --build-arg UBUNTU_VERSION=${{ matrix.name }}
