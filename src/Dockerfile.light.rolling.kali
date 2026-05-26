@@ -1,7 +1,7 @@
 ARG XRDP_VERSION=v0.10.6
 ARG DEBIAN_FRONTEND=noninteractive
 
-FROM kalilinux/kali-rolling AS main
+FROM kalilinux/kali-last-release AS main
 
 # --------------------------------------------------------------------------------
 
@@ -11,7 +11,7 @@ FROM main AS builder
 
 ARG DEBIAN_FRONTEND
 ARG XRDP_VERSION
-RUN (echo "deb-src http://http.kali.org/kali kali-rolling main non-free contrib" | tee -a /etc/apt/sources.list.d/src_kali-rolling.list) && \
+RUN (echo "deb-src http://http.kali.org/kali kali-last-snapshot main non-free contrib" | tee -a /etc/apt/sources.list.d/src_kali-last-snapshot.list) && \
     (echo "deb http://http.kali.org/kali kali-debian-picks main" | tee -a /etc/apt/sources.list.d/kali-debian-picks.list)
 RUN apt-get -y update && apt-get -yy dist-upgrade
 ENV BUILD_DEPS="git autoconf pkg-config libssl-dev libpam0g-dev \
