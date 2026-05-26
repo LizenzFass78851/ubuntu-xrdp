@@ -11,8 +11,9 @@ FROM main AS builder
 
 ARG DEBIAN_FRONTEND
 ARG XRDP_VERSION
-RUN echo "deb-src http://kali.download/kali kali-rolling main non-free contrib" | tee -a /etc/apt/sources.list
-RUN echo "deb http://kali.download/kali kali-debian-picks main" >> /etc/apt/sources.list.d/kali-debian-picks.list
+RUN echo "deb-src http://http.kali.org/kali kali-last-snapshot main non-free contrib" | tee -a /etc/apt/sources.list
+RUN sed -E -i 's#kali-rolling#kali-last-snapshot#g' /etc/apt/sources.list.d/kali.sources
+RUN echo "deb http://http.kali.org/kali kali-debian-picks main" >> /etc/apt/sources.list.d/kali-debian-picks.list
 RUN apt-get -y update && apt-get -yy dist-upgrade
 ENV BUILD_DEPS="git autoconf pkg-config libssl-dev libpam0g-dev \
     libx11-dev libxfixes-dev libxrandr-dev nasm xsltproc flex \
@@ -51,6 +52,7 @@ ENV TZ="Etc/UTC"
 ARG DEBIAN_FRONTEND
 ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND}
 COPY --from=builder /etc/apt/sources.list.d/kali*.list /etc/apt/sources.list.d/
+COPY --from=builder /etc/apt/sources.list.d/kali.sources /etc/apt/sources.list.d/
 RUN apt update && apt -y dist-upgrade && apt install -y \
   ca-certificates \
   crudini \
