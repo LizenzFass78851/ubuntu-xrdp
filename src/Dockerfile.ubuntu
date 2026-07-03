@@ -6,9 +6,10 @@ FROM ubuntu:$UBUNTU_VERSION AS main
 
 ARG DEBIAN_FRONTEND
 WORKDIR /etc/apt/mirrors
-RUN cat > /etc/apt/mirrors/ubuntu.list <<EOF
-http://mirrors.edge.kernel.org/ubuntu
-http://archive.ubuntu.com/ubuntu
+RUN cat > /etc/apt/mirrors/ubuntu.list <<'EOF'
+http://azure.archive.ubuntu.com/ubuntu	priority:1
+http://archive.ubuntu.com/ubuntu	priority:2
+http://mirrors.edge.kernel.org/ubuntu	priority:3
 EOF
 RUN for a in $(find /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources); do \
       sed -E -i 's#http://[^[:space:]]*ubuntu\.com/ubuntu#mirror+file:///etc/apt/mirrors/ubuntu.list#g' $a \
