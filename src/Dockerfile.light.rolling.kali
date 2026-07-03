@@ -51,7 +51,7 @@ ENV TZ="Etc/UTC"
 ARG DEBIAN_FRONTEND
 ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND}
 COPY --from=builder /etc/apt/sources.list.d/kali*.list /etc/apt/sources.list.d/
-RUN apt update && apt -y dist-upgrade && apt install -y \
+RUN apt-get update && apt-get -y dist-upgrade && apt-get install -y \
   ca-certificates \
   crudini \
   dbus-x11 \
