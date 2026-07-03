@@ -19,6 +19,10 @@ RUN if ls --version | grep -q uutils; then \
     apt-get update > /dev/null && apt-get remove -y --allow-remove-essential coreutils-from-uutils; \ 
     rm -rf /var/cache/apt /var/lib/apt/lists; else \
     echo "uutils coreutils not found, skipping removal."; fi
+RUN for a in snapd; do \
+      printf 'Package: %s\nPin: release o=*\nPin-Priority: -1\n' "$a" \
+        > "/etc/apt/preferences.d/no_${a}.pref"; \
+    done
 
 # --------------------------------------------------------------------------------
 
