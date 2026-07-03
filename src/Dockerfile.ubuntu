@@ -14,9 +14,10 @@ RUN for a in $(find /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources
       sed -E -i 's#http://[^[:space:]]*ubuntu\.com/ubuntu#mirror+file:///etc/apt/mirrors/ubuntu.list#g' $a \
       || echo "Failed to update $a"; \
     done || echo "No files were updated. Please check the sources list files."
-RUN (ls --version | grep -q uutils && (apt-get remove -y --allow-remove-essential coreutils-from-uutils && \ 
-    rm -rf /var/cache/apt /var/lib/apt/lists)) \
-    || (echo "uutils coreutils not found, skipping removal." && true)
+RUN if ls --version | grep -q uutils; then \
+    apt-get update > /dev/null && apt-get remove -y --allow-remove-essential coreutils-from-uutils; \ 
+    rm -rf /var/cache/apt /var/lib/apt/lists; else \
+    echo "uutils coreutils not found, skipping removal."; fi
 
 # --------------------------------------------------------------------------------
 
