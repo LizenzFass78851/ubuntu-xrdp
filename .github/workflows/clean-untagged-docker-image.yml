@@ -8,18 +8,12 @@ on:
 jobs:
   remove_untagged_images:
     runs-on: ubuntu-latest
-    if: ${{ (github.event_name == 'schedule' && github.repository_owner != 'LizenzFass78851') || github.event_name != 'schedule'  }}
+    if: ${{ (github.event_name == 'schedule' && github.repository_owner != 'LizenzFass78851') || github.event_name != 'schedule' }}
     permissions:
       packages: write
       contents: read
     steps:
       - name: Delete all containers from package without tags
-        uses: Chizkiyahu/delete-untagged-ghcr-action@main
+        uses: dataaxiom/ghcr-cleanup-action@main
         with:
-          token: ${{ github.token }}
-          repository_owner: ${{ github.repository_owner }}
-          repository: ${{ github.repository }}
-          package_name: ${{ github.event.repository.name }}
-          untagged_only: true
-          owner_type: user # or org
-          except_untagged_multiplatform: true
+          delete-untagged: true
