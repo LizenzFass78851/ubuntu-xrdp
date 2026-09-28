@@ -101,4 +101,4 @@ RUN cp /etc/X11/xrdp/xorg.conf /etc/X11 && \
 VOLUME ["/etc/ssh","/home"]
 EXPOSE 3389 22 9001
 ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
-CMD ["supervisord"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
