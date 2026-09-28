@@ -1,4 +1,4 @@
-ARG XRDP_VERSION=v0.10.6
+ARG XRDP_VERSION=v0.10.6.1
 ARG DEBIAN_FRONTEND=noninteractive
 
 FROM kalilinux/kali-last-release AS main
