@@ -1,19 +1,18 @@
-version: '3.5'
 services:
   terminalserver:
     build: 
       context: ./src
       dockerfile: Dockerfile
       args:
-        UBUNTU_VERSION: 26.04
+        UBUNTU_VERSION: "26.04"
     image: ghcr.io/lizenzfass78851/ubuntu-xrdp:latest
     container_name: uxrdp
     hostname: terminalserver
     restart: always
     shm_size: 1g
     environment:
-       IDLETIME: 11
-       TZ: "Etc/UTC"
+      IDLETIME: 11
+      TZ: "Etc/UTC"
     ports:
       - "3389:3389"
       - "2222:22"
