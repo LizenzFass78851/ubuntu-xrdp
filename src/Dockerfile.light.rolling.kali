@@ -1,5 +1,6 @@
 ARG XRDP_VERSION=v0.10.6.1
 ARG DEBIAN_FRONTEND=noninteractive
+ARG KALI_MIRROR=http://http.kali.org/kali
 
 FROM kalilinux/kali-last-release AS main
 
@@ -11,8 +12,11 @@ FROM main AS builder
 
 ARG DEBIAN_FRONTEND
 ARG XRDP_VERSION
+ARG KALI_MIRROR
 RUN (echo "deb-src http://http.kali.org/kali kali-last-snapshot main non-free contrib" | tee -a /etc/apt/sources.list.d/src_kali-last-snapshot.list) && \
-    (echo "deb http://http.kali.org/kali kali-debian-picks main" | tee -a /etc/apt/sources.list.d/kali-debian-picks.list)
+    (echo "deb http://http.kali.org/kali kali-debian-picks main" | tee -a /etc/apt/sources.list.d/kali-debian-picks.list) && \
+    (printf 'Package: *\nPin: release n=kali-debian-picks\nPin-Priority: 100\n' | tee -a /etc/apt/preferences.d/kali-debian-picks)
+RUN sed -i -E "s#https?://http\\.kali\\.org/kali#${KALI_MIRROR}#g" /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null || true
 RUN apt-get -y update && apt-get -yy dist-upgrade
 ENV BUILD_DEPS="git autoconf pkg-config libssl-dev libpam0g-dev \
     libx11-dev libxfixes-dev libxrandr-dev nasm xsltproc flex \
@@ -50,8 +54,11 @@ ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
 ENV TZ="Etc/UTC"
 ARG DEBIAN_FRONTEND
 ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND}
+ARG KALI_MIRROR
 COPY --from=builder /etc/apt/sources.list.d/kali*.list /etc/apt/sources.list.d/
-RUN apt-get update && apt-get -y dist-upgrade && apt-get install -y \
+COPY --from=builder /etc/apt/preferences.d/kali-debian-picks /etc/apt/preferences.d/
+RUN sed -i -E "s#https?://http\\.kali\\.org/kali#${KALI_MIRROR}#g" /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null || true && \
+  apt-get update && apt-get -y dist-upgrade && apt-get install -y \
   ca-certificates \
   crudini \
   dbus-x11 \
@@ -75,7 +82,8 @@ RUN apt-get update && apt-get -y dist-upgrade && apt-get install -y \
   apt-get remove -y light-locker xscreensaver && \
   apt-get autoremove -yy && \
   rm -rf /var/cache/apt /var/lib/apt/lists && \
-  mkdir -p /var/lib/xrdp-pulseaudio-installer
+  mkdir -p /var/lib/xrdp-pulseaudio-installer && \
+  sed -i -E "s#${KALI_MIRROR}#http://http.kali.org/kali#g" /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null || true
 COPY --from=builder /tmp/so/module-xrdp-source.so /var/lib/xrdp-pulseaudio-installer
 COPY --from=builder /tmp/so/module-xrdp-sink.so /var/lib/xrdp-pulseaudio-installer
 ADD bin /usr/bin

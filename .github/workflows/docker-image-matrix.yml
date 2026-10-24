@@ -84,6 +84,7 @@ jobs:
           build-args: &build-args |
             GH_TOKEN=${{ github.token }}
             UBUNTU_VERSION=${{ matrix.target }}
+            KALI_MIRROR=http://kali.download/kali/
           context: &context ${{ matrix.context }}
           file: &file ${{ matrix.context }}/${{ matrix.dockerfile }}
           cache-to: &cache-to type=gha,mode=max,ignore-error=true

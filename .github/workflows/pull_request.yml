@@ -72,6 +72,7 @@ jobs:
         with: 
           build-args: |
             UBUNTU_VERSION=${{ matrix.name }}
+            KALI_MIRROR=https://kali.download/kali
           context: ${{ env.WORKING_DIRECTORY }}
           file: ${{ env.WORKING_DIRECTORY }}/${{ matrix.dockerfile }}
           cache-to: ''

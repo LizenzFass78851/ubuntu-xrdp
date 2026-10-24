@@ -1,7 +1,11 @@
 FROM ghcr.io/lizenzfass78851/ubuntu-xrdp:kali-light
 
-RUN apt-get update && apt-get dist-upgrade -yy && \ 
+ARG KALI_MIRROR=http://http.kali.org/kali
+
+RUN sed -i -E "s#https?://http\\.kali\\.org/kali#${KALI_MIRROR}#g" /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null || true && \
+  apt-get update && apt-get dist-upgrade -yy && \ 
   apt-get install -y \
   kali-linux-default && \
   apt-get autoremove -yy && \
-  rm -rf /var/cache/apt /var/lib/apt/lists
+  rm -rf /var/cache/apt /var/lib/apt/lists && \
+  sed -i -E "s#${KALI_MIRROR}#http://http.kali.org/kali#g" /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null || true
