@@ -27,8 +27,22 @@ env:
 
 jobs:
   prepare_matrix:
+    permissions:
+      pull-requests: read
     runs-on: ubuntu-slim
     steps:
+      - uses: dorny/paths-filter@v4
+        if: ${{ github.event_name == 'pull_request' }}
+        id: filter
+        with:
+          filters: |
+            ubuntu:
+              - 'src/Dockerfile.ubuntu'
+            kali_light:
+              - 'src/Dockerfile.light.rolling.kali'
+            kali_default:
+              - 'src/Dockerfile.default.rolling.kali'
+
       - name: output matrix
         id: matrix
         run: |
@@ -99,6 +113,9 @@ jobs:
           echo "$TAG00_JSON" | jq . && (echo "tag00=$TAG00_JSON" >> $GITHUB_OUTPUT) || exit 1
 
     outputs:
+      ubuntu_changed: ${{ steps.filter.outputs.ubuntu }}
+      kali_light_changed: ${{ steps.filter.outputs.kali_light }}
+      kali_default_changed: ${{ steps.filter.outputs.kali_default }}
       arch: ${{ steps.matrix.outputs.arch }}
       tag11: ${{ steps.matrix.outputs.tag11 }}
       tag21: ${{ steps.matrix.outputs.tag21 }}
@@ -108,6 +125,7 @@ jobs:
   build_matrix11:
     name: Build image (${{ matrix.arch.cpu }})${{ github.event_name != 'pull_request' && format(' ({0})', matrix.tag.target) || '' }}
     needs: prepare_matrix
+    if: ${{ !cancelled() && (github.event_name != 'pull_request' || needs.prepare_matrix.outputs.ubuntu_changed == 'true') }}
     strategy:
       fail-fast: false
       matrix:
@@ -275,6 +293,7 @@ jobs:
   build_matrix_21:
     name: Build image (${{ matrix.arch.cpu }})${{ github.event_name != 'pull_request' && format(' ({0})', matrix.tag.target) || '' }}
     needs: prepare_matrix
+    if: ${{ !cancelled() && (github.event_name != 'pull_request' || needs.prepare_matrix.outputs.kali_light_changed == 'true') }}
     strategy:
       fail-fast: false
       matrix:
@@ -299,6 +318,7 @@ jobs:
   build_matrix_22:
     name: Build image (${{ matrix.arch.cpu }})${{ github.event_name != 'pull_request' && format(' ({0})', matrix.tag.target) || '' }}
     needs: [ prepare_matrix, build_matrix_21 ]
+    if: ${{ !cancelled() && ((github.event_name != 'pull_request' && needs.build_matrix_21.result == 'success') || needs.prepare_matrix.outputs.kali_default_changed == 'true') }}
     strategy:
       fail-fast: false
       matrix:
