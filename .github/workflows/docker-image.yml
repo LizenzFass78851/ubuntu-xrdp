@@ -1,0 +1,386 @@
+name: Build and Publish Docker Image
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '20 14 * * 2'
+  workflow_dispatch:
+
+concurrency:
+  group: >-
+    ${{ format(
+      '{0}-{1}{2}',
+      github.workflow,
+      github.event_name != 'pull_request' && github.ref_name || 'pull-request',
+      github.event.pull_request.number && format('-{0}', github.event.pull_request.number) || ''
+    ) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' && true || false }}
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.event.pull_request.base.repo.name || github.repository }}
+  IMAGE_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  prepare_matrix:
+    runs-on: ubuntu-slim
+    steps:
+      - name: output matrix
+        id: matrix
+        run: |
+          arch="
+          amd64;linux/amd64
+          "
+
+          tag11="
+          20.04;false
+          22.04;false
+          24.04;false
+          26.04;true
+          "
+
+          tag21="
+          kali-light;false
+          "
+
+          tag22="
+          kali-default;false
+          "
+
+          tag00="
+          ${tag11}
+          ${tag21}
+          ${tag22}
+          "
+
+          # Arch JSON
+          ARCH_JSON=$(echo "$arch" | awk -F';' 'NF {
+              printf "%s{\"cpu\":\"%s\",\"platform\":\"%s\"}", sep, $1, $2
+              sep=","
+          }')
+          ARCH_JSON="[$ARCH_JSON]"
+
+          # Tag11 JSON
+          TAG11_JSON=$(echo "$tag11" | awk -F';' 'NF {
+              printf "%s{\"target\":\"%s\",\"latest\":\"%s\"}", sep, $1, $2
+              sep=","
+          }')
+          TAG11_JSON="[$TAG11_JSON]"
+
+          # Tag21 JSON
+          TAG21_JSON=$(echo "$tag21" | awk -F';' 'NF {
+              printf "%s{\"target\":\"%s\",\"latest\":\"%s\"}", sep, $1, $2
+              sep=","
+          }')
+          TAG21_JSON="[$TAG21_JSON]"
+
+          # Tag22 JSON
+          TAG22_JSON=$(echo "$tag22" | awk -F';' 'NF {
+              printf "%s{\"target\":\"%s\",\"latest\":\"%s\"}", sep, $1, $2
+              sep=","
+          }')
+          TAG22_JSON="[$TAG22_JSON]"
+
+          # Tag00 JSON
+          TAG00_JSON=$(echo "$tag00" | awk -F';' 'NF {
+              printf "%s{\"target\":\"%s\",\"latest\":\"%s\"}", sep, $1, $2
+              sep=","
+          }')
+          TAG00_JSON="[$TAG00_JSON]"
+
+          echo "$ARCH_JSON" | jq . && (echo "arch=$ARCH_JSON" >> $GITHUB_OUTPUT) || exit 1
+          echo "$TAG11_JSON" | jq . && (echo "tag11=$TAG11_JSON" >> $GITHUB_OUTPUT) || exit 1
+          echo "$TAG21_JSON" | jq . && (echo "tag21=$TAG21_JSON" >> $GITHUB_OUTPUT) || exit 1
+          echo "$TAG22_JSON" | jq . && (echo "tag22=$TAG22_JSON" >> $GITHUB_OUTPUT) || exit 1
+          echo "$TAG00_JSON" | jq . && (echo "tag00=$TAG00_JSON" >> $GITHUB_OUTPUT) || exit 1
+
+    outputs:
+      arch: ${{ steps.matrix.outputs.arch }}
+      tag11: ${{ steps.matrix.outputs.tag11 }}
+      tag21: ${{ steps.matrix.outputs.tag21 }}
+      tag22: ${{ steps.matrix.outputs.tag22 }}
+      tag00: ${{ steps.matrix.outputs.tag00 }}
+
+  build_matrix11:
+    name: Build image (${{ matrix.arch.cpu }})${{ github.event_name != 'pull_request' && format(' ({0})', matrix.tag.target) || '' }}
+    needs: prepare_matrix
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: ${{fromJSON(needs.prepare_matrix.outputs.tag11)}}
+        arch: ${{fromJSON(needs.prepare_matrix.outputs.arch)}}
+
+    runs-on: ${{ (startsWith(matrix.arch.cpu, 'arm') || matrix.arch.cpu == 'riscv64') && 'ubuntu-26.04-arm' || 'ubuntu-26.04' }}
+
+    env:
+      CONTAINER_NAME: test-${{ github.run_id }}-${{ matrix.arch.cpu }}
+
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+        image_name_lower: ${{ steps.image_name_lower.outputs.image_name_lower }}
+        full_image_name_lower: ${{ steps.image_name_lower.outputs.full_image_name_lower }}
+
+    steps: &build-matrix-steps
+      - name: Checkout Dockerfile
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ env.IMAGE_BRANCH }}
+
+      - name: Setup QEMU
+        if: ${{ contains(matrix.arch.platform, 'linux/riscv64') }}
+        uses: docker/setup-qemu-action@v4
+
+      - &buildx-setup
+        name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - &login-ghcr
+        name: Login to GitHub Container Registry
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ github.token }}
+
+      - &meta
+        name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            latest=${{ matrix.tag.latest == 'true' }}
+          tags: |
+            type=raw,value=${{ matrix.tag.target }}
+
+      - name: Image Name Lowercase
+        id: image_name_lower
+        run: |
+          lowercase="$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')"
+          echo "image_name_lower=${lowercase}" >> $GITHUB_OUTPUT
+          echo "full_image_name_lower=${{ env.REGISTRY }}/${lowercase}" >> $GITHUB_OUTPUT
+
+      - name: Build architecture image
+        if: ${{ github.event_name != 'pull_request' }}
+        id: prebuild
+        uses: docker/build-push-action@v7
+        with:
+          build-args: &build-args |
+            GH_TOKEN=${{ github.token }}
+            UBUNTU_VERSION=${{ matrix.tag.target }}
+            KALI_MIRROR=http://kali.download/kali
+          context: &context src
+          file: &file ${{ matrix.tag.target == 'kali-default' && 'src/Dockerfile.default.rolling.kali' || matrix.tag.target == 'kali-light' && 'src/Dockerfile.light.rolling.kali' || 'src/Dockerfile.ubuntu' }}
+          platforms: &platforms ${{ matrix.arch.platform }}
+          cache-to: &cache-to ${{ github.event_name != 'pull_request' && format('type=gha,mode=max,ignore-error=true,scope={0}-{1}', matrix.tag.target, matrix.arch.cpu) || '' }}
+          cache-from: &cache-from ${{ github.event_name != 'pull_request' && format('type=gha,scope={0}-{1}', matrix.tag.target, matrix.arch.cpu) || '' }}
+          labels: &labels ${{ steps.meta.outputs.labels }}
+          outputs: >-
+            type=image,
+            name=${{ steps.image_name_lower.outputs.full_image_name_lower }},
+            push-by-digest=true,
+            name-canonical=true,
+            push=true
+
+      - name: Build architecture image for pull requests
+        if: ${{ github.event_name == 'pull_request' }}
+        id: pr-build
+        uses: docker/build-push-action@v7
+        with:
+          build-args: *build-args
+          context: *context
+          file: *file
+          platforms: *platforms
+          cache-to: *cache-to
+          cache-from: *cache-from
+          labels: *labels
+          tags: ${{ steps.meta.outputs.tags }}
+          load: true
+          push: false
+
+      - name: Export digests
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          mkdir -p /tmp/digests
+          digest_docker="${{ steps.prebuild.outputs.digest }}"
+          [ -n "$digest_docker" ] && touch "/tmp/digests/${digest_docker#sha256:}"
+
+      - name: Upload digest
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: digests-${{ matrix.tag.target }}-${{ matrix.arch.cpu }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+      - name: Test - start
+        env:
+          PLATFORM: "${{ matrix.arch.platform }}"
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            IMAGE=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+          else
+            IMAGE=$(echo "${{ steps.image_name_lower.outputs.full_image_name_lower }}@${{ steps.prebuild.outputs.digest }}" | head -n1)
+          fi
+          sudo docker run -t -d \
+          --shm-size 1g \
+          --name ${{ env.CONTAINER_NAME }} --platform ${PLATFORM%%,*} \
+          ${IMAGE}
+      - name: Test - specific tests
+        env:
+          WAITING_SECOND: 20
+        run: |
+          echo "waiting ${WAITING_SECOND} seconds to check if the container was not exiting"
+          sleep "${WAITING_SECOND}"
+
+          if [ "$(docker inspect -f '{{.State.Status}}' "${{ env.CONTAINER_NAME }}")" = "exited" ]; then
+            echo "Container exited unexpectedly"
+            exit 1
+          else
+            echo "Container is running as expected"
+          fi
+
+          # more tests
+          if docker exec "$CONTAINER_NAME" supervisorctl -c /etc/supervisor/supervisord.conf status xrdp 2>/dev/null | grep -qE '^xrdp[[:space:]]+RUNNING' \
+            && docker exec "$CONTAINER_NAME" supervisorctl -c /etc/supervisor/supervisord.conf status sshd 2>/dev/null | grep -qE '^sshd[[:space:]]+RUNNING'; then
+              echo "xrdp and sshd are running"
+              exit 0
+          else
+            echo "xrdp or sshd is not running"
+            exit 1
+          fi
+      - name: Test - show logs
+        if: always()
+        run: |
+          sudo docker logs "${{ env.CONTAINER_NAME }}" || true
+      - name: Test - stop and remove
+        if: always()
+        run: |
+          sudo docker stop -t 10 "${{ env.CONTAINER_NAME }}" \
+            || sudo docker stop -s SIGKILL -t 10 "${{ env.CONTAINER_NAME }}" \
+            || true
+
+          sudo docker rm -f "${{ env.CONTAINER_NAME }}" || true
+
+  build_matrix_21:
+    name: Build image (${{ matrix.arch.cpu }})${{ github.event_name != 'pull_request' && format(' ({0})', matrix.tag.target) || '' }}
+    needs: prepare_matrix
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: ${{fromJSON(needs.prepare_matrix.outputs.tag21)}}
+        arch: ${{fromJSON(needs.prepare_matrix.outputs.arch)}}
+
+    runs-on: ${{ (startsWith(matrix.arch.cpu, 'arm') || matrix.arch.cpu == 'riscv64') && 'ubuntu-26.04-arm' || 'ubuntu-26.04' }}
+
+    env:
+      CONTAINER_NAME: test-${{ github.run_id }}-${{ matrix.arch.cpu }}
+
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+        image_name_lower: ${{ steps.image_name_lower.outputs.image_name_lower }}
+        full_image_name_lower: ${{ steps.image_name_lower.outputs.full_image_name_lower }}
+
+    steps: *build-matrix-steps
+
+  build_matrix_22:
+    name: Build image (${{ matrix.arch.cpu }})${{ github.event_name != 'pull_request' && format(' ({0})', matrix.tag.target) || '' }}
+    needs: [ prepare_matrix, build_matrix_21 ]
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: ${{fromJSON(needs.prepare_matrix.outputs.tag22)}}
+        arch: ${{fromJSON(needs.prepare_matrix.outputs.arch)}}
+
+    runs-on: ${{ (startsWith(matrix.arch.cpu, 'arm') || matrix.arch.cpu == 'riscv64') && 'ubuntu-26.04-arm' || 'ubuntu-26.04' }}
+
+    env:
+      CONTAINER_NAME: test-${{ github.run_id }}-${{ matrix.arch.cpu }}
+
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+        image_name_lower: ${{ steps.image_name_lower.outputs.image_name_lower }}
+        full_image_name_lower: ${{ steps.image_name_lower.outputs.full_image_name_lower }}
+
+    steps: *build-matrix-steps
+
+  merge_manifests:
+    needs: [prepare_matrix, build_matrix11, build_matrix_21, build_matrix_22]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: ${{fromJSON(needs.prepare_matrix.outputs.tag00)}}
+
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME_LOWERCASE: ${{ needs.build_matrix11.outputs.image_name_lower }}
+      FULL_IMAGE_NAME_LOWERCASE: ${{ needs.build_matrix11.outputs.full_image_name_lower }}
+
+    permissions:
+      contents: read
+      packages: write
+    
+    if: ${{ github.event_name != 'pull_request' }}
+
+    steps:
+      - *buildx-setup
+
+      - *login-ghcr
+
+      - *meta
+
+      - name: Download digests
+        uses: actions/download-artifact@v8
+        with:
+          path: /tmp/digests
+          pattern: digests-${{ matrix.tag.target }}-*
+          merge-multiple: true
+
+      - name: Show digests
+        run: |
+          find "/tmp/digests" -type f -print -exec cat {} \;
+
+      - name: Create multi-architecture manifest
+        working-directory: /tmp/digests
+        run: |
+          IMAGE="${{ env.FULL_IMAGE_NAME_LOWERCASE }}"
+
+          SOURCES=()
+
+          for digest_file in $(printf 'sha256:%s ' *); do
+            digest="$digest_file"
+            SOURCES+=("${IMAGE}@${digest}")
+          done
+
+          TAG_ARGS=()
+
+          while IFS= read -r tag; do
+            TAG_ARGS+=(--tag "$tag")
+          done <<< "${{ steps.meta.outputs.tags }}"
+
+          docker buildx imagetools create \
+            "${TAG_ARGS[@]}" \
+            "${SOURCES[@]}"
+
+      - name: Inspect final manifest
+        run: |
+          docker buildx imagetools inspect \
+            "${{ fromJSON(steps.meta.outputs.json).tags[0] }}"
