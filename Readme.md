@@ -7,6 +7,12 @@ Copy/Paste and sound is working.
 Users can re-login in the same session.
 Xfce4, Firefox are pre installed.
 
+## Supported architectures
+
+The published images support both `linux/amd64` and `linux/arm64`. Docker
+automatically selects the matching architecture when you pull or run an image;
+no separate ARM64 tag or configuration is needed.
+
 ---
 
 # Tags
@@ -125,5 +131,4 @@ cd ubuntu-xrdp/
 nano docker-compose.yml # if you want to override any default value
 docker-compose up -d
 ```
-
 

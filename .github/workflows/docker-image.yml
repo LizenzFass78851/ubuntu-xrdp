@@ -48,6 +48,7 @@ jobs:
         run: |
           arch="
           amd64;linux/amd64
+          arm64;linux/arm64
           "
 
           tag11="
