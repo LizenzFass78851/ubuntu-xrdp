@@ -65,12 +65,6 @@ jobs:
           kali-default;false
           "
 
-          tag00="
-          ${tag11}
-          ${tag21}
-          ${tag22}
-          "
-
           # Arch JSON
           ARCH_JSON=$(echo "$arch" | awk -F';' 'NF {
               printf "%s{\"cpu\":\"%s\",\"platform\":\"%s\"}", sep, $1, $2
@@ -99,18 +93,10 @@ jobs:
           }')
           TAG22_JSON="[$TAG22_JSON]"
 
-          # Tag00 JSON
-          TAG00_JSON=$(echo "$tag00" | awk -F';' 'NF {
-              printf "%s{\"target\":\"%s\",\"latest\":\"%s\"}", sep, $1, $2
-              sep=","
-          }')
-          TAG00_JSON="[$TAG00_JSON]"
-
           echo "$ARCH_JSON" | jq . && (echo "arch=$ARCH_JSON" >> $GITHUB_OUTPUT) || exit 1
           echo "$TAG11_JSON" | jq . && (echo "tag11=$TAG11_JSON" >> $GITHUB_OUTPUT) || exit 1
           echo "$TAG21_JSON" | jq . && (echo "tag21=$TAG21_JSON" >> $GITHUB_OUTPUT) || exit 1
           echo "$TAG22_JSON" | jq . && (echo "tag22=$TAG22_JSON" >> $GITHUB_OUTPUT) || exit 1
-          echo "$TAG00_JSON" | jq . && (echo "tag00=$TAG00_JSON" >> $GITHUB_OUTPUT) || exit 1
 
     outputs:
       ubuntu_changed: ${{ steps.filter.outputs.ubuntu }}
@@ -120,7 +106,6 @@ jobs:
       tag11: ${{ steps.matrix.outputs.tag11 }}
       tag21: ${{ steps.matrix.outputs.tag21 }}
       tag22: ${{ steps.matrix.outputs.tag22 }}
-      tag00: ${{ steps.matrix.outputs.tag00 }}
 
   build_matrix11:
     name: Build image (${{ matrix.arch.cpu }})${{ github.event_name != 'pull_request' && format(' ({0})', matrix.tag.target) || '' }}
@@ -290,63 +275,13 @@ jobs:
 
           sudo docker rm -f "${{ env.CONTAINER_NAME }}" || true
 
-  build_matrix_21:
-    name: Build image (${{ matrix.arch.cpu }})${{ github.event_name != 'pull_request' && format(' ({0})', matrix.tag.target) || '' }}
-    needs: prepare_matrix
-    if: ${{ !cancelled() && (github.event_name != 'pull_request' || needs.prepare_matrix.outputs.kali_light_changed == 'true') }}
-    strategy:
-      fail-fast: false
-      matrix:
-        tag: ${{fromJSON(needs.prepare_matrix.outputs.tag21)}}
-        arch: ${{fromJSON(needs.prepare_matrix.outputs.arch)}}
-
-    runs-on: ${{ (startsWith(matrix.arch.cpu, 'arm') || matrix.arch.cpu == 'riscv64') && 'ubuntu-26.04-arm' || 'ubuntu-26.04' }}
-
-    env:
-      CONTAINER_NAME: test-${{ github.run_id }}-${{ matrix.arch.cpu }}
-
-    permissions:
-      contents: read
-      packages: write
-
-    outputs:
-        image_name_lower: ${{ steps.image_name_lower.outputs.image_name_lower }}
-        full_image_name_lower: ${{ steps.image_name_lower.outputs.full_image_name_lower }}
-
-    steps: *build-matrix-steps
-
-  build_matrix_22:
-    name: Build image (${{ matrix.arch.cpu }})${{ github.event_name != 'pull_request' && format(' ({0})', matrix.tag.target) || '' }}
-    needs: [ prepare_matrix, build_matrix_21 ]
-    if: ${{ !cancelled() && ((github.event_name != 'pull_request' && needs.build_matrix_21.result == 'success') || needs.prepare_matrix.outputs.kali_default_changed == 'true') }}
-    strategy:
-      fail-fast: false
-      matrix:
-        tag: ${{fromJSON(needs.prepare_matrix.outputs.tag22)}}
-        arch: ${{fromJSON(needs.prepare_matrix.outputs.arch)}}
-
-    runs-on: ${{ (startsWith(matrix.arch.cpu, 'arm') || matrix.arch.cpu == 'riscv64') && 'ubuntu-26.04-arm' || 'ubuntu-26.04' }}
-
-    env:
-      CONTAINER_NAME: test-${{ github.run_id }}-${{ matrix.arch.cpu }}
-
-    permissions:
-      contents: read
-      packages: write
-
-    outputs:
-        image_name_lower: ${{ steps.image_name_lower.outputs.image_name_lower }}
-        full_image_name_lower: ${{ steps.image_name_lower.outputs.full_image_name_lower }}
-
-    steps: *build-matrix-steps
-
-  merge_manifests:
-    needs: [prepare_matrix, build_matrix11, build_matrix_21, build_matrix_22]
+  merge_manifests_11:
+    needs: [prepare_matrix, build_matrix11]
 
     strategy:
       fail-fast: false
       matrix:
-        tag: ${{fromJSON(needs.prepare_matrix.outputs.tag00)}}
+        tag: ${{fromJSON(needs.prepare_matrix.outputs.tag11)}}
 
     runs-on: ubuntu-latest
 
@@ -360,7 +295,7 @@ jobs:
     
     if: ${{ github.event_name != 'pull_request' }}
 
-    steps:
+    steps: &merge-manifest-steps
       - *buildx-setup
 
       - *login-ghcr
@@ -404,3 +339,97 @@ jobs:
         run: |
           docker buildx imagetools inspect \
             "${{ fromJSON(steps.meta.outputs.json).tags[0] }}"
+
+  build_matrix_21:
+    name: Build image (${{ matrix.arch.cpu }})${{ github.event_name != 'pull_request' && format(' ({0})', matrix.tag.target) || '' }}
+    needs: prepare_matrix
+    if: ${{ !cancelled() && (github.event_name != 'pull_request' || needs.prepare_matrix.outputs.kali_light_changed == 'true') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: ${{fromJSON(needs.prepare_matrix.outputs.tag21)}}
+        arch: ${{fromJSON(needs.prepare_matrix.outputs.arch)}}
+
+    runs-on: ${{ (startsWith(matrix.arch.cpu, 'arm') || matrix.arch.cpu == 'riscv64') && 'ubuntu-26.04-arm' || 'ubuntu-26.04' }}
+
+    env:
+      CONTAINER_NAME: test-${{ github.run_id }}-${{ matrix.arch.cpu }}
+
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+        image_name_lower: ${{ steps.image_name_lower.outputs.image_name_lower }}
+        full_image_name_lower: ${{ steps.image_name_lower.outputs.full_image_name_lower }}
+
+    steps: *build-matrix-steps
+
+  merge_manifests_21:
+    needs: [prepare_matrix, build_matrix_21]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: ${{fromJSON(needs.prepare_matrix.outputs.tag21)}}
+
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME_LOWERCASE: ${{ needs.build_matrix_21.outputs.image_name_lower }}
+      FULL_IMAGE_NAME_LOWERCASE: ${{ needs.build_matrix_21.outputs.full_image_name_lower }}
+
+    permissions:
+      contents: read
+      packages: write
+    
+    if: ${{ github.event_name != 'pull_request' }}
+
+    steps: *merge-manifest-steps
+
+  build_matrix_22:
+    name: Build image (${{ matrix.arch.cpu }})${{ github.event_name != 'pull_request' && format(' ({0})', matrix.tag.target) || '' }}
+    needs: [prepare_matrix, merge_manifests_21]
+    if: ${{ !cancelled() && ((github.event_name != 'pull_request' && needs.merge_manifests_21.result == 'success') || needs.prepare_matrix.outputs.kali_default_changed == 'true') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: ${{fromJSON(needs.prepare_matrix.outputs.tag22)}}
+        arch: ${{fromJSON(needs.prepare_matrix.outputs.arch)}}
+
+    runs-on: ${{ (startsWith(matrix.arch.cpu, 'arm') || matrix.arch.cpu == 'riscv64') && 'ubuntu-26.04-arm' || 'ubuntu-26.04' }}
+
+    env:
+      CONTAINER_NAME: test-${{ github.run_id }}-${{ matrix.arch.cpu }}
+
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+        image_name_lower: ${{ steps.image_name_lower.outputs.image_name_lower }}
+        full_image_name_lower: ${{ steps.image_name_lower.outputs.full_image_name_lower }}
+
+    steps: *build-matrix-steps
+
+  merge_manifests_22:
+    needs: [prepare_matrix, build_matrix_22]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: ${{fromJSON(needs.prepare_matrix.outputs.tag22)}}
+
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME_LOWERCASE: ${{ needs.build_matrix_22.outputs.image_name_lower }}
+      FULL_IMAGE_NAME_LOWERCASE: ${{ needs.build_matrix_22.outputs.full_image_name_lower }}
+
+    permissions:
+      contents: read
+      packages: write
+    
+    if: ${{ github.event_name != 'pull_request' }}
+
+    steps: *merge-manifest-steps
